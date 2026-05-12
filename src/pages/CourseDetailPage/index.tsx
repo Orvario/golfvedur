@@ -352,9 +352,9 @@ function NowHero({ days }: { course: Course; days: DayGroup[] }) {
 
   return (
     <div
+      className="now-hero"
       style={{
         background: bg,
-        height: 'calc(100vh - 52px - 56px)',
         display: 'flex',
         flexDirection: 'column',
         position: 'relative',
@@ -921,20 +921,16 @@ export function CourseDetailPage() {
                 borderTop: mainTab === tab ? '3px solid #003c71' : '3px solid transparent',
                 color: mainTab === tab ? '#003c71' : '#888',
                 fontFamily: 'inherit',
-                fontSize: 13,
+                fontSize: 14,
                 fontWeight: mainTab === tab ? 700 : 500,
                 cursor: 'pointer',
                 display: 'flex',
-                flexDirection: 'column',
                 alignItems: 'center',
                 justifyContent: 'center',
-                gap: 3,
-                paddingTop: 4,
                 transition: 'color 0.12s',
               }}
             >
-              <span style={{ fontSize: 18 }}>{tab === 'now' ? '🌡️' : '📅'}</span>
-              <span>{tab === 'now' ? 'Núna' : 'Spá'}</span>
+              <span>{tab === 'now' ? 'Núna' : 'Næstu 10 dagar'}</span>
             </button>
           ))}
         </div>
