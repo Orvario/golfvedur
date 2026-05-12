@@ -337,27 +337,29 @@ function NowHero({ days }: { course: Course; days: DayGroup[] }) {
         onTouchMove={onHeroTouchMove}
         onTouchEnd={onHeroTouchEnd}
       >
+        {/* Time + date */}
         {slot && (
-          <div style={{ marginBottom: 10, textAlign: 'center' }}>
+          <div style={{ marginBottom: 12, textAlign: 'center' }}>
             <div style={{
-              fontSize: 32, fontWeight: 300, color: '#fff',
+              fontSize: 36, fontWeight: 700, color: '#fff',
               letterSpacing: 1, lineHeight: 1,
-              textShadow: '0 1px 10px rgba(0,0,0,0.2)',
             }}>
               {slot.from.toLocaleTimeString('is-IS', { hour: '2-digit', minute: '2-digit', hour12: false })}
             </div>
             <div style={{
               fontSize: 13, color: 'rgba(255,255,255,0.65)',
-              fontWeight: 500, marginTop: 4, letterSpacing: 0.2,
+              fontWeight: 500, marginTop: 5, letterSpacing: 0.3,
+              textTransform: 'uppercase',
             }}>
               {slotDateLabel}
             </div>
           </div>
         )}
 
+        {/* Icon */}
         {slot && (
-          <div style={{ marginBottom: 6 }}>
-            <span style={{ fontSize: 60, lineHeight: 1 }}>
+          <div style={{ marginBottom: 4 }}>
+            <span style={{ fontSize: 56, lineHeight: 1 }}>
               {getEmoji(slot.symbolVar, slot.symbolName)}
             </span>
           </div>
@@ -366,54 +368,51 @@ function NowHero({ days }: { course: Course; days: DayGroup[] }) {
         {/* Temperature */}
         {slot && (
           <div style={{
-            fontSize: 80, fontWeight: 300, color: '#fff',
+            fontSize: 80, fontWeight: 700, color: '#fff',
             lineHeight: 1, letterSpacing: -2,
-            textShadow: '0 2px 16px rgba(0,0,0,0.25)',
           }}>
             {formatTemp(slot.temperatureC)}
           </div>
         )}
 
-        {/* Feels like */}
-        {fl !== null && (
-          <div style={{ color: 'rgba(255,255,255,0.8)', fontSize: 15, marginTop: 7 }}>
-            Líður eins og {formatTemp(fl)}
-          </div>
-        )}
-
-        {/* Wind */}
-        {slot && (
-          <div style={{ color: 'rgba(255,255,255,0.7)', fontSize: 13, marginTop: 5 }}>
-            {translateWindName(slot.windName)} frá {slot.windCode} · {slot.windMps.toFixed(1)} m/s
-          </div>
-        )}
-
         {/* Condition */}
-        <div style={{
-          color: '#fff', fontSize: 18, fontWeight: 600, marginTop: 22,
-          textAlign: 'center', textShadow: '0 1px 8px rgba(0,0,0,0.3)',
-        }}>
-          {conditionText}.
-        </div>
+        {conditionText && (
+          <div style={{
+            color: 'rgba(255,255,255,0.9)', fontSize: 14, fontWeight: 700,
+            marginTop: 8, textTransform: 'uppercase', letterSpacing: 1,
+          }}>
+            {conditionText}
+          </div>
+        )}
 
-        {/* High / low / precip for that day */}
+        {/* Feels like + wind */}
+        {fl !== null && (
+          <div style={{ color: 'rgba(255,255,255,0.75)', fontSize: 13, fontWeight: 500, marginTop: 10, textAlign: 'center', lineHeight: 1.7 }}>
+            <div>Líður eins og {formatTemp(fl)}</div>
+            {slot && (
+              <div>{translateWindName(slot.windName)} frá {slot.windCode} · {slot.windMps.toFixed(1)} m/s</div>
+            )}
+          </div>
+        )}
+
+        {/* High / low / precip */}
         <div style={{
-          display: 'flex', alignItems: 'center', gap: 16, marginTop: 16,
-          color: 'rgba(255,255,255,0.85)', fontSize: 14,
+          display: 'flex', alignItems: 'center', gap: 14, marginTop: 16,
+          fontSize: 13, fontWeight: 600,
+          borderTop: '1px solid rgba(255,255,255,0.2)',
+          paddingTop: 14,
         }}>
-          <span>
-            <span style={{ color: '#ffca80' }}>↑</span>
-            {' '}<span style={{ fontWeight: 600 }}>{formatTemp(high)}</span>
+          <span style={{ color: 'rgba(255,255,255,0.9)' }}>
+            <span style={{ color: '#ffca80' }}>↑</span> {formatTemp(high)}
           </span>
           <span style={{ color: 'rgba(255,255,255,0.3)' }}>·</span>
-          <span>
-            <span style={{ color: '#80c8ff' }}>↓</span>
-            {' '}<span style={{ fontWeight: 600 }}>{formatTemp(low)}</span>
+          <span style={{ color: 'rgba(255,255,255,0.9)' }}>
+            <span style={{ color: '#80c8ff' }}>↓</span> {formatTemp(low)}
           </span>
           {dayPrecip > 0.05 && (
             <>
               <span style={{ color: 'rgba(255,255,255,0.3)' }}>·</span>
-              <span style={{ color: 'rgba(180,220,255,0.9)', fontWeight: 600 }}>
+              <span style={{ color: 'rgba(180,220,255,0.9)' }}>
                 {dayPrecip.toFixed(1)} mm
               </span>
             </>
