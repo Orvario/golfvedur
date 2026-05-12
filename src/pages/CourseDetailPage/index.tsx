@@ -4,7 +4,6 @@ import { fetchCourses, fetchForecast } from '../../api';
 import type { Course, DayGroup, HourlySlot } from '../../types';
 import { HourlyStrip, ROW_TIME_H, ROW_ICON_H, ROW_TEMP_H, ROW_PRECIP_H, ROW_WIND_H } from '../../components/HourlyStrip';
 import { WeatherIcon, getWeatherGradient, getConditionText, getEmoji } from '../../components/WeatherIcon';
-import { WindArrow } from '../../components/WindArrow';
 
 type MainTab = 'now' | 'forecast';
 
@@ -53,53 +52,6 @@ function formatDateIS(date: Date): string {
   return `${weekday} ${day}. ${month}`;
 }
 
-// Group hours into 6-hour slot blocks: 01-07, 07-13, 13-19, 19-01
-type SlotLabel = 'Nótt' | 'Morgunn' | 'Síðdegis' | 'Kvöld';
-interface SixHourSlot {
-  label: SlotLabel;
-  timeRange: string;
-  hours: HourlySlot[];
-  icon: HourlySlot;
-  tempMin: number;
-  tempMax: number;
-  totalPrecip: number;
-  avgWindMps: number;
-  maxWindMps: number;
-  dominantWindDeg: number;
-}
-
-function groupIntoSixHourSlots(hours: HourlySlot[]): SixHourSlot[] {
-  const SLOTS: { label: SlotLabel; range: string; start: number; end: number }[] = [
-    { label: 'Nótt', range: '01–07', start: 1, end: 7 },
-    { label: 'Morgunn', range: '07–13', start: 7, end: 13 },
-    { label: 'Síðdegis', range: '13–19', start: 13, end: 19 },
-    { label: 'Kvöld', range: '19–01', start: 19, end: 25 },
-  ];
-  const results: SixHourSlot[] = [];
-  for (const s of SLOTS) {
-    const slotHours = hours.filter((h) => {
-      const hr = h.from.getHours();
-      return hr >= s.start && hr < s.end;
-    });
-    if (slotHours.length === 0) continue;
-    // Representative hour: midpoint or noon for morning etc.
-    const midIdx = Math.floor(slotHours.length / 2);
-    const icon = slotHours[midIdx];
-    results.push({
-      label: s.label,
-      timeRange: s.range,
-      hours: slotHours,
-      icon,
-      tempMin: Math.min(...slotHours.map((h) => h.temperatureC)),
-      tempMax: Math.max(...slotHours.map((h) => h.temperatureC)),
-      totalPrecip: slotHours.reduce((sum, h) => sum + h.precipitationMm, 0),
-      avgWindMps: slotHours.reduce((sum, h) => sum + h.windMps, 0) / slotHours.length,
-      maxWindMps: Math.max(...slotHours.map((h) => h.windMps)),
-      dominantWindDeg: icon.windDeg,
-    });
-  }
-  return results;
-}
 
 
 // ─── Now Hero ──────────────────────────────────────────────────────────────────
@@ -545,190 +497,151 @@ function RainStreaks() {
 
 // ─── Forecast List ─────────────────────────────────────────────────────────────
 
+type ForecastView = 'list' | 'graph';
+
 function ForecastList({ days }: { days: DayGroup[] }) {
-  const [expandedDay, setExpandedDay] = useState<number | null>(null);
+  const [view, setView] = useState<ForecastView>('list');
 
   return (
-    <div style={{ background: '#f5f5f0', minHeight: 'calc(100vh - 56px)', paddingBottom: 24 }}>
-      {days.map((day, dayIdx) => {
-        const slots = groupIntoSixHourSlots(day.hours);
-        const isExpanded = expandedDay === dayIdx;
+    <div style={{ background: '#eaecf2', minHeight: 'calc(100dvh - 108px)', paddingBottom: 32 }}>
+      {days.map((day, dayIdx) => (
+        <div key={dayIdx} style={{ marginBottom: 0 }}>
+          {/* Day header */}
+          <div style={{
+            background: '#003c71',
+            padding: '10px 16px',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+          }}>
+            <span style={{
+              fontSize: 12, fontWeight: 800, color: '#fff',
+              letterSpacing: 1.5, textTransform: 'uppercase',
+            }}>
+              {dayIdx === 0 ? 'Í dag' : dayIdx === 1 ? 'Á morgun' : formatDateIS(day.date)}
+            </span>
 
-        return (
-          <div key={dayIdx} style={{ marginBottom: 0 }}>
-            {/* Day header */}
-            <div
-              style={{
-                padding: '14px 16px 6px',
-                background: '#f5f5f0',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'space-between',
-              }}
-            >
-              <span
-                style={{
-                  fontSize: 13,
-                  fontWeight: 700,
-                  color: '#333',
-                  textTransform: 'none',
-                }}
-              >
-                {dayIdx === 0 ? 'Í dag' : dayIdx === 1 ? 'Á morgun' : ''}
-                <span style={{ fontWeight: 400, color: '#888', marginLeft: dayIdx <= 1 ? 8 : 0 }}>
-                  {formatDateIS(day.date)}
-                </span>
-              </span>
-            </div>
-
-            {/* Slot rows */}
-            <div
-              style={{
-                background: '#fff',
-                borderTop: '1px solid #eaeae4',
-                borderBottom: '1px solid #eaeae4',
-              }}
-            >
-              {slots.map((slot, slotIdx) => (
-                <div
-                  key={slotIdx}
+            {/* LIST / GRAF toggle — shown on every day header */}
+            <div style={{
+              display: 'flex', borderRadius: 6, overflow: 'hidden',
+              border: '1.5px solid rgba(255,255,255,0.3)',
+            }}>
+              {(['list', 'graph'] as ForecastView[]).map((v) => (
+                <button
+                  key={v}
+                  onClick={() => setView(v)}
                   style={{
-                    display: 'flex',
-                    alignItems: 'center',
-                    padding: '10px 16px',
-                    borderBottom: slotIdx < slots.length - 1 ? '1px solid #f0f0ea' : 'none',
-                    gap: 14,
+                    padding: '4px 12px',
+                    border: 'none',
+                    cursor: 'pointer',
+                    background: view === v ? '#fff' : 'transparent',
+                    color: view === v ? '#003c71' : 'rgba(255,255,255,0.75)',
+                    fontSize: 11, fontWeight: 800, letterSpacing: 1,
+                    textTransform: 'uppercase', fontFamily: 'inherit',
+                    transition: 'background 0.15s, color 0.15s',
                   }}
                 >
-                  {/* Time range */}
-                  <div
-                    style={{
-                      fontSize: 13,
-                      color: '#666',
-                      fontWeight: 500,
-                      minWidth: 46,
-                      fontVariantNumeric: 'tabular-nums',
-                    }}
-                  >
-                    {slot.timeRange}
-                  </div>
-
-                  {/* Weather icon */}
-                  <div style={{ width: 36, flexShrink: 0, textAlign: 'center' }}>
-                    <WeatherIcon
-                      symbolVar={slot.icon.symbolVar}
-                      symbolName={slot.icon.symbolName}
-                      size={26}
-                    />
-                  </div>
-
-                  {/* Temperature */}
-                  <div
-                    style={{
-                      flex: 1,
-                      display: 'flex',
-                      alignItems: 'center',
-                      gap: 4,
-                      fontSize: 15,
-                      fontWeight: 600,
-                    }}
-                  >
-                    {slot.tempMin !== slot.tempMax ? (
-                      <>
-                        <span style={{ color: slot.tempMax < 0 ? '#3a7ab8' : '#1a1a1a' }}>
-                          {formatTemp(slot.tempMax)}
-                        </span>
-                        <span style={{ color: '#bbb', fontWeight: 400, fontSize: 12 }}>/</span>
-                        <span style={{ color: '#888', fontSize: 13, fontWeight: 500 }}>
-                          {formatTemp(slot.tempMin)}
-                        </span>
-                      </>
-                    ) : (
-                      <span style={{ color: slot.tempMax < 0 ? '#3a7ab8' : '#1a1a1a' }}>
-                        {formatTemp(slot.tempMax)}
-                      </span>
-                    )}
-                    {slot.totalPrecip >= 0.2 && (
-                      <span style={{ color: '#4a90d9', fontSize: 12, marginLeft: 6, fontWeight: 500 }}>
-                        {slot.totalPrecip.toFixed(1)} mm
-                      </span>
-                    )}
-                  </div>
-
-                  {/* Wind */}
-                  <div style={{ flexShrink: 0 }}>
-                    <WindArrow deg={slot.dominantWindDeg} mps={slot.avgWindMps} size={16} />
-                  </div>
-                </div>
+                  {v === 'list' ? 'Listi' : 'Graf'}
+                </button>
               ))}
-
-              {/* Details toggle */}
-              <button
-                onClick={() => setExpandedDay(isExpanded ? null : dayIdx)}
-                style={{
-                  width: '100%',
-                  background: 'none',
-                  border: 'none',
-                  borderTop: '1px solid #eaeae4',
-                  padding: '9px 16px',
-                  fontSize: 13,
-                  color: '#003c71',
-                  fontWeight: 600,
-                  cursor: 'pointer',
-                  textAlign: 'left',
-                  fontFamily: 'inherit',
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: 4,
-                }}
-              >
-                {isExpanded ? '▲' : '▼'} Nánar
-              </button>
-
-              {/* Expanded hourly strip */}
-              {isExpanded && (
-                <div style={{ borderTop: '1px solid #eaeae4' }}>
-                  <div style={{ display: 'flex' }}>
-                    {/* Row label column */}
-                    <div
-                      style={{
-                        flexShrink: 0,
-                        borderRight: '1px solid #e4e4de',
-                        background: '#fafaf8',
-                        display: 'flex',
-                        flexDirection: 'column',
-                      }}
-                    >
-                      {ROW_LABELS.map((label, i) => (
-                        <div
-                          key={label}
-                          style={{
-                            height: ROW_HEIGHTS[i],
-                            display: 'flex',
-                            alignItems: 'center',
-                            padding: '0 10px',
-                            fontSize: 11,
-                            color: '#999',
-                            fontWeight: 500,
-                            borderBottom: i < ROW_LABELS.length - 1 ? '1px solid #e8e8e4' : 'none',
-                            whiteSpace: 'nowrap',
-                            minWidth: 82,
-                          }}
-                        >
-                          {label}
-                        </div>
-                      ))}
-                    </div>
-                    <div style={{ flex: 1, minWidth: 0 }}>
-                      <HourlyStrip hours={day.hours} />
-                    </div>
-                  </div>
-                </div>
-              )}
             </div>
           </div>
-        );
-      })}
+
+          {/* Content card */}
+          <div style={{ background: '#fff', borderBottom: '1px solid #dde0e8' }}>
+            {view === 'list' ? (
+              day.hours.map((slot, i) => {
+                const fl = Math.round(feelsLike(slot.temperatureC, slot.windMps));
+                const time = slot.from.toLocaleTimeString('is-IS', {
+                  hour: '2-digit', minute: '2-digit', hour12: false,
+                });
+                const tempInt = Math.round(slot.temperatureC);
+                const flInt = fl;
+                return (
+                  <div
+                    key={i}
+                    style={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      padding: '12px 16px',
+                      borderBottom: i < day.hours.length - 1 ? '1px solid #f0f2f5' : 'none',
+                      gap: 14,
+                    }}
+                  >
+                    {/* Time */}
+                    <div style={{
+                      width: 46, flexShrink: 0,
+                      fontSize: 14, fontWeight: 700, color: '#222',
+                      fontVariantNumeric: 'tabular-nums',
+                    }}>
+                      {time}
+                    </div>
+
+                    {/* Icon */}
+                    <div style={{ width: 34, flexShrink: 0 }}>
+                      <WeatherIcon symbolVar={slot.symbolVar} symbolName={slot.symbolName} size={28} />
+                    </div>
+
+                    {/* Temperature */}
+                    <div style={{
+                      width: 52, flexShrink: 0,
+                      fontSize: 22, fontWeight: 800, lineHeight: 1,
+                      color: slot.temperatureC < 0 ? '#3a7ab8' : '#1a1a1a',
+                    }}>
+                      {tempInt > 0 ? `+${tempInt}` : tempInt}°
+                    </div>
+
+                    {/* Feels like */}
+                    <div style={{ flex: 1, fontSize: 13, color: '#777' }}>
+                      Líður eins og {flInt > 0 ? `+${flInt}` : flInt}°
+                    </div>
+
+                    {/* Precipitation */}
+                    <div style={{
+                      flexShrink: 0, minWidth: 52, textAlign: 'right',
+                      fontSize: 13, fontWeight: 600,
+                      color: slot.precipitationMm >= 0.1 ? '#4a90d9' : '#ccc',
+                    }}>
+                      {slot.precipitationMm >= 0.1
+                        ? `${slot.precipitationMm.toFixed(1)} mm`
+                        : '0 mm'}
+                    </div>
+                  </div>
+                );
+              })
+            ) : (
+              /* Graph view */
+              <div>
+                <div style={{ display: 'flex' }}>
+                  <div style={{
+                    flexShrink: 0, borderRight: '1px solid #e4e4de',
+                    background: '#fafaf8', display: 'flex', flexDirection: 'column',
+                  }}>
+                    {ROW_LABELS.map((label, i) => (
+                      <div
+                        key={label}
+                        style={{
+                          height: ROW_HEIGHTS[i],
+                          display: 'flex', alignItems: 'center',
+                          padding: '0 10px',
+                          fontSize: 11, color: '#999', fontWeight: 500,
+                          borderBottom: i < ROW_LABELS.length - 1 ? '1px solid #e8e8e4' : 'none',
+                          whiteSpace: 'nowrap', minWidth: 82,
+                        }}
+                      >
+                        {label}
+                      </div>
+                    ))}
+                  </div>
+                  <div style={{ flex: 1, minWidth: 0 }}>
+                    <HourlyStrip hours={day.hours} />
+                  </div>
+                </div>
+              </div>
+            )}
+          </div>
+        </div>
+      ))}
     </div>
   );
 }
