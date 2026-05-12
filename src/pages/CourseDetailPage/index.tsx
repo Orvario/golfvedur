@@ -583,15 +583,23 @@ function ForecastList({ days, course }: { days: DayGroup[]; course: Course }) {
                       {tempInt > 0 ? `+${tempInt}` : tempInt}°
                     </div>
 
+                    {/* Wind */}
+                    <div style={{
+                      flex: 1,
+                      fontSize: 13, fontWeight: 600, color: '#555',
+                    }}>
+                      {slot.windMps.toFixed(1)} m/s {slot.windCode}
+                    </div>
+
                     {/* Precipitation */}
                     <div style={{
-                      flex: 1, textAlign: 'right',
+                      flexShrink: 0, textAlign: 'right',
                       fontSize: 13, fontWeight: 600,
                       color: slot.precipitationMm >= 0.1 ? '#4a90d9' : '#ccc',
                     }}>
                       {slot.precipitationMm >= 0.1
                         ? `${slot.precipitationMm.toFixed(1)} mm`
-                        : '0 mm'}
+                        : '–'}
                     </div>
                   </div>
                 );
