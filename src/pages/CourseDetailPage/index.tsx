@@ -385,13 +385,10 @@ function NowHero({ days }: { course: Course; days: DayGroup[] }) {
           </div>
         )}
 
-        {/* Feels like + wind */}
-        {fl !== null && (
-          <div style={{ color: 'rgba(255,255,255,0.75)', fontSize: 13, fontWeight: 500, marginTop: 10, textAlign: 'center', lineHeight: 1.7 }}>
-            <div>Líður eins og {formatTemp(fl)}</div>
-            {slot && (
-              <div>{translateWindName(slot.windName)} frá {slot.windCode} · {slot.windMps.toFixed(1)} m/s</div>
-            )}
+        {/* Wind */}
+        {slot && (
+          <div style={{ color: 'rgba(255,255,255,0.9)', fontSize: 15, fontWeight: 600, marginTop: 10, textAlign: 'center' }}>
+            {translateWindName(slot.windName)} frá {slot.windCode} · {slot.windMps.toFixed(1)} m/s
           </div>
         )}
 
