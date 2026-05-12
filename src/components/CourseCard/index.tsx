@@ -1,7 +1,6 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import type { Course, HourlySlot } from '../../types';
-import { WeatherIcon } from '../WeatherIcon';
 import { WindArrow } from '../WindArrow';
 import { CLUB_LOGOS } from '../../utils/clubLogos';
 
@@ -83,19 +82,6 @@ export function CourseCard({ course, currentWeather, isFavourite, onToggleFavour
         (e.currentTarget as HTMLDivElement).style.transform = 'none';
       }}
     >
-      {/* Weather icon */}
-      <div style={{ width: 44, flexShrink: 0, textAlign: 'center' }}>
-        {currentWeather ? (
-          <WeatherIcon
-            symbolVar={currentWeather.symbolVar}
-            symbolName={currentWeather.symbolName}
-            size={32}
-          />
-        ) : (
-          <div style={{ width: 32, height: 32, borderRadius: '50%', background: '#eee', margin: '0 auto' }} />
-        )}
-      </div>
-
       {/* Course info */}
       <div style={{ flex: 1, minWidth: 0, display: 'flex', alignItems: 'center', gap: 10 }}>
         <ClubBadge url={getClubLogoUrl(course.extra.abbr, course.extra.webpage)} name={course.extra.club} />

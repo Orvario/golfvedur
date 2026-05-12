@@ -8,4 +8,5 @@ export const CLUB_LOGOS: Record<string, string> = {
   GBE: '/logos/GBE.png',
   GD: '/logos/GD.png',
   GS: '/logos/GS.png',
+  NK: '/logos/NK.png',
 };
