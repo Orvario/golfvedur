@@ -97,7 +97,7 @@ export function getWeatherGradient(symbolVar: string, symbolName: string, hour?:
 export function getConditionText(symbolVar: string, symbolName: string): string {
   const cat = getWeatherCategory(symbolVar, symbolName);
   switch (cat) {
-    case 'clear': return 'Heiðskært';
+    case 'clear': return 'Heiðskýjað';
     case 'fair': return 'Að mestu heiðskært';
     case 'partly-cloudy': return 'Skýjað að hluta';
     case 'cloudy': return 'Skýjað';

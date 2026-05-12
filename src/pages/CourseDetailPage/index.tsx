@@ -386,11 +386,20 @@ function NowHero({ days }: { course: Course; days: DayGroup[] }) {
         onTouchEnd={onHeroTouchEnd}
       >
         {slot && (
-          <div style={{
-            fontSize: 13, color: 'rgba(255,255,255,0.7)', marginBottom: 8,
-            fontWeight: 500, letterSpacing: 0.2,
-          }}>
-            {slotDateLabel} · {slot.from.toLocaleTimeString('is-IS', { hour: '2-digit', minute: '2-digit', hour12: false })}
+          <div style={{ marginBottom: 10, textAlign: 'center' }}>
+            <div style={{
+              fontSize: 32, fontWeight: 300, color: '#fff',
+              letterSpacing: 1, lineHeight: 1,
+              textShadow: '0 1px 10px rgba(0,0,0,0.2)',
+            }}>
+              {slot.from.toLocaleTimeString('is-IS', { hour: '2-digit', minute: '2-digit', hour12: false })}
+            </div>
+            <div style={{
+              fontSize: 13, color: 'rgba(255,255,255,0.65)',
+              fontWeight: 500, marginTop: 4, letterSpacing: 0.2,
+            }}>
+              {slotDateLabel}
+            </div>
           </div>
         )}
 
