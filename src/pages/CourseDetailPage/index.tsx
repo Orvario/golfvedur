@@ -114,15 +114,25 @@ interface TimelineStripProps {
 }
 
 function HourlyTimelineStrip({ hours, activeIdx, onActiveChange, scrollRef }: TimelineStripProps) {
-  // Scroll strip to show the active column
+  // Track drag distance to distinguish tap from scroll on mouse
+  const dragMoved = useRef(false);
+
+  // Keep strip scrolled so the active column is visible (but don't fight user scrolling)
+  const prevActiveIdx = useRef(activeIdx);
   useEffect(() => {
     if (!scrollRef.current) return;
-    scrollRef.current.scrollLeft = activeIdx * COL_W;
+    // Only auto-scroll when activeIdx was changed programmatically (hero drag),
+    // not when it changed because the user scrolled the strip itself.
+    if (prevActiveIdx.current !== activeIdx) {
+      scrollRef.current.scrollLeft = activeIdx * COL_W;
+    }
+    prevActiveIdx.current = activeIdx;
   }, [activeIdx]);
 
   function handleScroll() {
     if (!scrollRef.current) return;
     const idx = Math.round(scrollRef.current.scrollLeft / COL_W);
+    prevActiveIdx.current = idx; // mark as strip-driven so useEffect doesn't fight it
     onActiveChange(Math.max(0, Math.min(idx, hours.length - 1)));
   }
 
@@ -131,11 +141,11 @@ function HourlyTimelineStrip({ hours, activeIdx, onActiveChange, scrollRef }: Ti
     if (!el) return;
     const startX = e.pageX;
     const startScroll = el.scrollLeft;
-    let moved = false;
+    dragMoved.current = false;
     const onMove = (ev: MouseEvent) => {
       const dx = ev.pageX - startX;
-      if (Math.abs(dx) > 4) moved = true;
-      if (moved) {
+      if (Math.abs(dx) > 4) dragMoved.current = true;
+      if (dragMoved.current) {
         el.scrollLeft = startScroll - dx;
         onActiveChange(Math.max(0, Math.min(Math.round(el.scrollLeft / COL_W), hours.length - 1)));
       }
@@ -148,7 +158,6 @@ function HourlyTimelineStrip({ hours, activeIdx, onActiveChange, scrollRef }: Ti
     el.style.cursor = 'grabbing';
     document.addEventListener('mousemove', onMove);
     document.addEventListener('mouseup', onUp);
-    void moved;
   }
 
   const totalWidth = hours.length * COL_W;
@@ -193,6 +202,7 @@ function HourlyTimelineStrip({ hours, activeIdx, onActiveChange, scrollRef }: Ti
             return (
               <div
                 key={i}
+                onClick={() => { if (!dragMoved.current) onActiveChange(i); }}
                 style={{
                   width: COL_W,
                   flexShrink: 0,
@@ -204,6 +214,7 @@ function HourlyTimelineStrip({ hours, activeIdx, onActiveChange, scrollRef }: Ti
                   background: isActive ? 'rgba(255,255,255,0.18)' : 'transparent',
                   position: 'relative',
                   transition: 'background 0.2s',
+                  cursor: 'pointer',
                 }}
               >
                 {/* "Now" pill */}
@@ -343,7 +354,7 @@ function NowHero({ days }: { course: Course; days: DayGroup[] }) {
     <div
       style={{
         background: bg,
-        minHeight: 'calc(100vh - 56px)',
+        height: 'calc(100vh - 52px - 56px)',
         display: 'flex',
         flexDirection: 'column',
         position: 'relative',
