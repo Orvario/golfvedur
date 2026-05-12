@@ -1,7 +1,45 @@
+import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import type { Course, HourlySlot } from '../../types';
 import { WeatherIcon } from '../WeatherIcon';
 import { WindArrow } from '../WindArrow';
+
+export function getClubFaviconUrl(webpage: string | null | undefined): string | null {
+  if (!webpage) return null;
+  try {
+    const domain = new URL(webpage).hostname;
+    return `https://www.google.com/s2/favicons?domain=${domain}&sz=64`;
+  } catch {
+    return null;
+  }
+}
+
+function ClubBadge({ url, name }: { url: string | null; name: string }) {
+  const [failed, setFailed] = useState(false);
+  if (!url || failed) {
+    return (
+      <div style={{
+        width: 28, height: 28, borderRadius: '50%', flexShrink: 0,
+        background: '#003c71', display: 'flex', alignItems: 'center',
+        justifyContent: 'center', fontSize: 14,
+      }}>
+        ⛳
+      </div>
+    );
+  }
+  return (
+    <img
+      src={url}
+      alt={name}
+      onError={() => setFailed(true)}
+      style={{
+        width: 28, height: 28, borderRadius: '50%', flexShrink: 0,
+        objectFit: 'contain', background: '#f5f5f5',
+        border: '1px solid #e4e4de',
+      }}
+    />
+  );
+}
 
 interface Props {
   course: Course;
@@ -52,18 +90,21 @@ export function CourseCard({ course, currentWeather, isFavourite, onToggleFavour
       </div>
 
       {/* Course info */}
-      <div style={{ flex: 1, minWidth: 0 }}>
-        <div style={{
-          fontWeight: 700, fontSize: 14, color: '#003c71',
-          whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis',
-        }}>
-          {course.name}
-        </div>
-        <div style={{
-          fontSize: 12, color: '#666', marginTop: 2,
-          whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis',
-        }}>
-          {course.extra.club}
+      <div style={{ flex: 1, minWidth: 0, display: 'flex', alignItems: 'center', gap: 10 }}>
+        <ClubBadge url={getClubFaviconUrl(course.extra.webpage)} name={course.extra.club} />
+        <div style={{ minWidth: 0 }}>
+          <div style={{
+            fontWeight: 700, fontSize: 14, color: '#003c71',
+            whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis',
+          }}>
+            {course.name}
+          </div>
+          <div style={{
+            fontSize: 12, color: '#666', marginTop: 2,
+            whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis',
+          }}>
+            {course.extra.club}
+          </div>
         </div>
       </div>
 

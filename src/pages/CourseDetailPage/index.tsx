@@ -5,8 +5,27 @@ import type { Course, DayGroup, HourlySlot } from '../../types';
 import { HourlyStrip, ROW_TIME_H, ROW_ICON_H, ROW_TEMP_H, ROW_PRECIP_H, ROW_WIND_H } from '../../components/HourlyStrip';
 import { WeatherIcon, getWeatherGradient, getConditionText, getEmoji } from '../../components/WeatherIcon';
 import { getSunTimes, formatSunTime } from '../../utils/sun';
+import { getClubFaviconUrl } from '../../components/CourseCard';
 
 type MainTab = 'now' | 'forecast';
+
+function HeaderClubBadge({ url, name }: { url: string | null; name: string }) {
+  const [failed, setFailed] = useState(false);
+  if (!url || failed) return null;
+  return (
+    <img
+      src={url}
+      alt={name}
+      onError={() => setFailed(true)}
+      style={{
+        width: 32, height: 32, borderRadius: '50%', flexShrink: 0,
+        objectFit: 'contain', background: 'rgba(255,255,255,0.9)',
+        border: '1.5px solid rgba(255,255,255,0.4)',
+        padding: 2,
+      }}
+    />
+  );
+}
 
 const ROW_LABELS = ['Tími', 'Veður', 'Hitastig', 'Rigning (mm)', 'Vindur'];
 const ROW_HEIGHTS = [ROW_TIME_H, ROW_ICON_H, ROW_TEMP_H, ROW_PRECIP_H, ROW_WIND_H];
@@ -799,22 +818,27 @@ export function CourseDetailPage() {
         >
           ‹
         </button>
-        <div style={{ flex: 1, minWidth: 0 }}>
-          <div style={{
-            fontWeight: 700,
-            fontSize: 16,
-            color: '#fff',
-            whiteSpace: 'nowrap',
-            overflow: 'hidden',
-            textOverflow: 'ellipsis',
-          }}>
-            {course?.name ?? '…'}
-          </div>
+        <div style={{ flex: 1, minWidth: 0, display: 'flex', alignItems: 'center', gap: 10 }}>
           {course && (
-            <div style={{ fontSize: 11, color: 'rgba(255,255,255,0.65)', marginTop: 1 }}>
-              {course.extra.club}
-            </div>
+            <HeaderClubBadge url={getClubFaviconUrl(course.extra.webpage)} name={course.extra.club} />
           )}
+          <div style={{ minWidth: 0 }}>
+            <div style={{
+              fontWeight: 700,
+              fontSize: 16,
+              color: '#fff',
+              whiteSpace: 'nowrap',
+              overflow: 'hidden',
+              textOverflow: 'ellipsis',
+            }}>
+              {course?.name ?? '…'}
+            </div>
+            {course && (
+              <div style={{ fontSize: 11, color: 'rgba(255,255,255,0.65)', marginTop: 1 }}>
+                {course.extra.club}
+              </div>
+            )}
+          </div>
         </div>
 
         {/* Share button */}
