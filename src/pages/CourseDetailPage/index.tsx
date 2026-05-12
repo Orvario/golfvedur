@@ -8,7 +8,7 @@ import { WindArrow } from '../../components/WindArrow';
 
 type MainTab = 'now' | 'forecast';
 
-const ROW_LABELS = ['Time', 'Weather', 'Temperature', 'Rain (mm)', 'Wind'];
+const ROW_LABELS = ['Tími', 'Veður', 'Hitastig', 'Rigning (mm)', 'Vindur'];
 const ROW_HEIGHTS = [ROW_TIME_H, ROW_ICON_H, ROW_TEMP_H, ROW_PRECIP_H, ROW_WIND_H];
 
 // Wind chill approximation (°C, wind in m/s)
@@ -24,7 +24,7 @@ function formatTemp(t: number): string {
 }
 
 // Group hours into 6-hour slot blocks: 01-07, 07-13, 13-19, 19-01
-type SlotLabel = 'Night' | 'Morning' | 'Afternoon' | 'Evening';
+type SlotLabel = 'Nótt' | 'Morgunn' | 'Síðdegis' | 'Kvöld';
 interface SixHourSlot {
   label: SlotLabel;
   timeRange: string;
@@ -40,10 +40,10 @@ interface SixHourSlot {
 
 function groupIntoSixHourSlots(hours: HourlySlot[]): SixHourSlot[] {
   const SLOTS: { label: SlotLabel; range: string; start: number; end: number }[] = [
-    { label: 'Night', range: '01–07', start: 1, end: 7 },
-    { label: 'Morning', range: '07–13', start: 7, end: 13 },
-    { label: 'Afternoon', range: '13–19', start: 13, end: 19 },
-    { label: 'Evening', range: '19–01', start: 19, end: 25 },
+    { label: 'Nótt', range: '01–07', start: 1, end: 7 },
+    { label: 'Morgunn', range: '07–13', start: 7, end: 13 },
+    { label: 'Síðdegis', range: '13–19', start: 13, end: 19 },
+    { label: 'Kvöld', range: '19–01', start: 19, end: 25 },
   ];
   const results: SixHourSlot[] = [];
   for (const s of SLOTS) {
@@ -157,7 +157,7 @@ function HourlyTimelineStrip({ hours, nowIdx, activeIdx, onActiveChange, scrollR
           {hours.map((slot, i) => {
             const isActive = i === activeIdx;
             const isNow = i === nowIdx;
-            const hourLabel = slot.from.toLocaleTimeString('en-GB', {
+            const hourLabel = slot.from.toLocaleTimeString('is-IS', {
               hour: '2-digit', minute: '2-digit', hour12: false,
             });
 
@@ -185,7 +185,7 @@ function HourlyTimelineStrip({ hours, nowIdx, activeIdx, onActiveChange, scrollR
                     padding: '2px 6px', borderRadius: 6, letterSpacing: 0.5,
                     textTransform: 'uppercase', whiteSpace: 'nowrap',
                   }}>
-                    Now
+                    Nú
                   </div>
                 )}
                 <div style={{
@@ -311,7 +311,7 @@ function NowHero({ days }: { course: Course; days: DayGroup[] }) {
   const conditionText = slot ? getConditionText(slot.symbolVar, slot.symbolName) : '';
 
   const slotDateLabel = slot
-    ? slot.from.toLocaleDateString('en-GB', { weekday: 'long', day: 'numeric', month: 'long' })
+    ? slot.from.toLocaleDateString('is-IS', { weekday: 'long', day: 'numeric', month: 'long' })
     : '';
 
   return (
@@ -355,7 +355,7 @@ function NowHero({ days }: { course: Course; days: DayGroup[] }) {
             fontSize: 13, color: 'rgba(255,255,255,0.7)', marginBottom: 8,
             fontWeight: 500, letterSpacing: 0.2,
           }}>
-            {slotDateLabel} · {slot.from.toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit', hour12: false })}
+            {slotDateLabel} · {slot.from.toLocaleTimeString('is-IS', { hour: '2-digit', minute: '2-digit', hour12: false })}
           </div>
         )}
 
@@ -381,14 +381,14 @@ function NowHero({ days }: { course: Course; days: DayGroup[] }) {
         {/* Feels like */}
         {fl !== null && (
           <div style={{ color: 'rgba(255,255,255,0.8)', fontSize: 15, marginTop: 7 }}>
-            Feels like {formatTemp(fl)}
+            Líður eins og {formatTemp(fl)}
           </div>
         )}
 
         {/* Wind */}
         {slot && (
           <div style={{ color: 'rgba(255,255,255,0.7)', fontSize: 13, marginTop: 5 }}>
-            {slot.windName} from {slot.windCode} · {slot.windMps.toFixed(1)} m/s
+            {slot.windName} frá {slot.windCode} · {slot.windMps.toFixed(1)} m/s
           </div>
         )}
 
@@ -530,9 +530,9 @@ function ForecastList({ days }: { days: DayGroup[] }) {
                   textTransform: 'none',
                 }}
               >
-                {dayIdx === 0 ? 'Today' : dayIdx === 1 ? 'Tomorrow' : ''}
+                {dayIdx === 0 ? 'Í dag' : dayIdx === 1 ? 'Á morgun' : ''}
                 <span style={{ fontWeight: 400, color: '#888', marginLeft: dayIdx <= 1 ? 8 : 0 }}>
-                  {day.date.toLocaleDateString('en-GB', {
+                  {day.date.toLocaleDateString('is-IS', {
                     weekday: 'long',
                     day: 'numeric',
                     month: 'long',
@@ -642,7 +642,7 @@ function ForecastList({ days }: { days: DayGroup[] }) {
                   gap: 4,
                 }}
               >
-                {isExpanded ? '▲' : '▼'} Details
+                {isExpanded ? '▲' : '▼'} Nánar
               </button>
 
               {/* Expanded hourly strip */}
@@ -707,26 +707,26 @@ function CourseInfoCard({ course }: { course: Course }) {
       }}
     >
       <h2 style={{ margin: '0 0 12px', fontSize: 14, color: '#003c71', fontWeight: 700, textTransform: 'uppercase', letterSpacing: 0.5 }}>
-        Course info
+        Upplýsingar um völl
       </h2>
       <div style={{ display: 'flex', flexDirection: 'column', gap: 7 }}>
         {(course.extra.address ?? []).length > 0 && (
-          <InfoRow label="Address" value={course.extra.address.join(', ')} />
+          <InfoRow label="Heimilisfang" value={course.extra.address.join(', ')} />
         )}
         {course.extra.phone && (
-          <InfoRow label="Phone" value={<a href={`tel:${course.extra.phone}`} style={{ color: '#003c71' }}>{course.extra.phone}</a>} />
+          <InfoRow label="Sími" value={<a href={`tel:${course.extra.phone}`} style={{ color: '#003c71' }}>{course.extra.phone}</a>} />
         )}
         {course.extra.email && (
-          <InfoRow label="Email" value={<a href={`mailto:${course.extra.email}`} style={{ color: '#003c71' }}>{course.extra.email}</a>} />
+          <InfoRow label="Netfang" value={<a href={`mailto:${course.extra.email}`} style={{ color: '#003c71' }}>{course.extra.email}</a>} />
         )}
         {course.extra.webpage && (
-          <InfoRow label="Website" value={
+          <InfoRow label="Vefsíða" value={
             <a href={course.extra.webpage} target="_blank" rel="noopener noreferrer" style={{ color: '#003c71' }}>
               {course.extra.webpage.replace(/^https?:\/\//, '')}
             </a>
           } />
         )}
-        <InfoRow label="Coordinates" value={`${course.lat.toFixed(4)}°N, ${Math.abs(course.lon).toFixed(4)}°W`} />
+        <InfoRow label="Hnit" value={`${course.lat.toFixed(4)}°N, ${Math.abs(course.lon).toFixed(4)}°V`} />
       </div>
     </div>
   );
@@ -758,7 +758,7 @@ export function CourseDetailPage() {
     fetchCourses()
       .then((list) => {
         const found = list.find((c) => c.id === decodedId);
-        if (!found) { setError('Course not found.'); setLoading(false); return undefined; }
+        if (!found) { setError('Völlur fannst ekki.'); setLoading(false); return undefined; }
         setCourse(found);
         return fetchForecast(found.lat, found.lon);
       })
@@ -768,7 +768,7 @@ export function CourseDetailPage() {
       })
       .catch((err) => {
         console.error(err);
-        setError('Failed to load forecast.');
+        setError('Tókst ekki að sækja veðurspá.');
         setLoading(false);
       });
   }, [id]);
@@ -845,7 +845,7 @@ export function CourseDetailPage() {
 
       {/* Content */}
       {loading && (
-        <div style={{ textAlign: 'center', padding: 80, color: '#888' }}>Loading forecast…</div>
+        <div style={{ textAlign: 'center', padding: 80, color: '#888' }}>Sæki veðurspá…</div>
       )}
       {error && (
         <div style={{ textAlign: 'center', padding: 40, color: '#c00' }}>{error}</div>
@@ -903,7 +903,7 @@ export function CourseDetailPage() {
               }}
             >
               <span style={{ fontSize: 18 }}>{tab === 'now' ? '🌡️' : '📅'}</span>
-              <span>{tab === 'now' ? 'Now' : 'Forecast'}</span>
+              <span>{tab === 'now' ? 'Núna' : 'Spá'}</span>
             </button>
           ))}
         </div>

@@ -53,7 +53,7 @@ export function CoursesPage() {
       .catch((err) => {
         console.error(err);
         const msg = err instanceof Error ? err.message : String(err);
-        setError(`Failed to load golf courses: ${msg}`);
+                setError(`Tókst ekki að sækja golfvelli: ${msg}`);
         setLoading(false);
       });
   }, []);
@@ -133,7 +133,7 @@ export function CoursesPage() {
                   padding: '3px 9px',
                 }}
               >
-                {weatherLoaded}/{courses.length} loaded
+                {weatherLoaded}/{courses.length} sótt
               </span>
             )}
           </div>
@@ -152,7 +152,7 @@ export function CoursesPage() {
             </span>
             <input
               type="search"
-              placeholder="Search courses or clubs…"
+              placeholder="Leita að velli eða klúbbi…"
               value={search}
               onChange={(e) => setSearch(e.target.value)}
               style={{
@@ -217,7 +217,7 @@ export function CoursesPage() {
               fontSize: 14,
             }}
           >
-            No courses match <strong>"{search}"</strong>
+            Enginn völlur passar við <strong>„{search}"</strong>
           </div>
         ) : (
           <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>

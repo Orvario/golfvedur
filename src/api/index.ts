@@ -101,11 +101,11 @@ function groupByDay(slots: HourlySlot[]): DayGroup[] {
 
   return Array.from(map.entries()).map(([key, hours]) => {
     let label: string;
-    if (key === today) label = 'Today';
-    else if (key === tomorrow) label = 'Tomorrow';
+    if (key === today) label = 'Í dag';
+    else if (key === tomorrow) label = 'Á morgun';
     else {
       const d = new Date(key);
-      label = d.toLocaleDateString('en-GB', { weekday: 'long', day: 'numeric', month: 'short' });
+      label = d.toLocaleDateString('is-IS', { weekday: 'long', day: 'numeric', month: 'short' });
     }
     return { date: new Date(key), label, hours };
   });

@@ -97,18 +97,18 @@ export function getWeatherGradient(symbolVar: string, symbolName: string, hour?:
 export function getConditionText(symbolVar: string, symbolName: string): string {
   const cat = getWeatherCategory(symbolVar, symbolName);
   switch (cat) {
-    case 'clear': return 'Clear skies';
-    case 'fair': return 'Mostly clear';
-    case 'partly-cloudy': return 'Partly cloudy';
-    case 'cloudy': return 'Overcast';
-    case 'rain-showers': return 'Showers likely';
-    case 'rain': return 'Rain';
-    case 'heavy-rain': return 'Heavy rain';
-    case 'sleet': return 'Sleet';
-    case 'snow': return 'Snow';
-    case 'thunder': return 'Thunderstorm';
-    case 'fog': return 'Foggy';
-    default: return symbolName || 'Unknown';
+    case 'clear': return 'Heiðskært';
+    case 'fair': return 'Að mestu heiðskært';
+    case 'partly-cloudy': return 'Skýjað að hluta';
+    case 'cloudy': return 'Skýjað';
+    case 'rain-showers': return 'Líklegar skúrir';
+    case 'rain': return 'Rigning';
+    case 'heavy-rain': return 'Mikil rigning';
+    case 'sleet': return 'Slydda';
+    case 'snow': return 'Snjókoma';
+    case 'thunder': return 'Þrumuveður';
+    case 'fog': return 'Þoka';
+    default: return symbolName || 'Óþekkt';
   }
 }
 

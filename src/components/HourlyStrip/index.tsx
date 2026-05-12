@@ -17,7 +17,7 @@ export const ROW_PRECIP_H = 40;
 export const ROW_WIND_H = 52;
 
 function formatHour(date: Date): string {
-  return date.toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit', hour12: false });
+  return date.toLocaleTimeString('is-IS', { hour: '2-digit', minute: '2-digit', hour12: false });
 }
 
 function TempCurve({ hours, width }: { hours: HourlySlot[]; width: number }) {
