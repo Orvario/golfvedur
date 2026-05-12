@@ -52,7 +52,8 @@ export function CoursesPage() {
       })
       .catch((err) => {
         console.error(err);
-        setError('Failed to load golf courses. Please try again.');
+        const msg = err instanceof Error ? err.message : String(err);
+        setError(`Failed to load golf courses: ${msg}`);
         setLoading(false);
       });
   }, []);
