@@ -496,6 +496,7 @@ function ForecastList({ days, course }: { days: DayGroup[]; course: Course }) {
 
   return (
     <div style={{ background: '#eaecf2', minHeight: 'calc(100dvh - 108px)', paddingBottom: 32 }}>
+      <div style={{ maxWidth: 680, margin: '0 auto' }}>
       {days.map((day, dayIdx) => {
         const sun = getSunTimes(course.lat, course.lon, day.date);
         return (
@@ -662,6 +663,7 @@ function ForecastList({ days, course }: { days: DayGroup[]; course: Course }) {
         </div>
         );
       })}
+      </div>
     </div>
   );
 }
