@@ -202,7 +202,7 @@ function HourlyTimelineStrip({ hours, activeIdx, onActiveChange, scrollRef }: Ti
                   marginTop: isNow ? 8 : 0,
                 }}>
                   {hourLabel}
-                </div>
+              </div>
                 <span style={{ fontSize: 22, lineHeight: 1 }}>
                   {getEmoji(slot.symbolVar, slot.symbolName)}
                 </span>
@@ -215,11 +215,11 @@ function HourlyTimelineStrip({ hours, activeIdx, onActiveChange, scrollRef }: Ti
                 {slot.precipitationMm >= 0.2 && (
                   <div style={{ fontSize: 10, color: 'rgba(180,220,255,0.9)', fontWeight: 600 }}>
                     {slot.precipitationMm.toFixed(1)}
-                  </div>
-                )}
+                </div>
+              )}
                 <div style={{ fontSize: 10, color: 'rgba(255,255,255,0.45)' }}>
                   {slot.windMps.toFixed(0)} m/s
-                </div>
+            </div>
               </div>
             );
           })}
@@ -397,8 +397,8 @@ function NowHero({ days }: { course: Course; days: DayGroup[] }) {
             marginTop: 8, textTransform: 'uppercase', letterSpacing: 1,
           }}>
             {conditionText}
-          </div>
-        )}
+              </div>
+            )}
 
         {/* Wind */}
         {slot && (
@@ -645,16 +645,16 @@ function ForecastList({ days, course }: { days: DayGroup[]; course: Course }) {
                         }}
                       >
                         {label}
-                      </div>
-                    ))}
                   </div>
-                  <div style={{ flex: 1, minWidth: 0 }}>
+                ))}
+              </div>
+              <div style={{ flex: 1, minWidth: 0 }}>
                     <HourlyStrip hours={day.hours} />
                   </div>
                 </div>
               </div>
             )}
-          </div>
+            </div>
 
           {/* Sunrise / sunset row */}
           {!sun.polarNight && (
@@ -675,9 +675,9 @@ function ForecastList({ days, course }: { days: DayGroup[]; course: Course }) {
                 <>
                   <span>🌅 {formatSunTime(sun.sunrise)}</span>
                   <span>🌇 {formatSunTime(sun.sunset)}</span>
-                </>
-              )}
-            </div>
+          </>
+        )}
+      </div>
           )}
         </div>
         );
@@ -716,8 +716,8 @@ function CourseInfoCard({ course }: { course: Course }) {
         {course.extra.webpage && (
           <InfoRow label="Vefsíða" value={
             <a href={course.extra.webpage} target="_blank" rel="noopener noreferrer" style={{ color: '#003c71' }}>
-              {course.extra.webpage.replace(/^https?:\/\//, '')}
-            </a>
+                {course.extra.webpage.replace(/^https?:\/\//, '')}
+              </a>
           } />
         )}
         <InfoRow label="Hnit" value={`${course.lat.toFixed(4)}°N, ${Math.abs(course.lon).toFixed(4)}°V`} />

@@ -36,13 +36,23 @@ export async function fetchCourses(): Promise<Course[]> {
     throw new Error('No courses returned from server');
   }
 
-  cachedCourses = stations.map((s) => ({
-    id: s.id,
-    name: s.name,
-    lat: s.lat,
-    lon: s.lon,
-    extra: s.extra,
-  }));
+  // Deduplicate by name — the upstream API occasionally returns the same course
+  // twice with different (erroneous) coordinates. Keep the first occurrence.
+  const seen = new Set<string>();
+  cachedCourses = stations
+    .filter((s) => {
+      const key = s.name.toLowerCase();
+      if (seen.has(key)) return false;
+      seen.add(key);
+      return true;
+    })
+    .map((s) => ({
+      id: s.id,
+      name: s.name,
+      lat: s.lat,
+      lon: s.lon,
+      extra: s.extra,
+    }));
 
   return cachedCourses;
 }
