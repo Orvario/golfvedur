@@ -1,7 +1,14 @@
 import { XMLParser } from 'fast-xml-parser';
 import type { Course, HourlySlot, DayGroup } from '../types';
 
-const BASE = 'https://wod-odinn.belgingur.is/api/v2/widget/meteo';
+// Use a local proxy path so requests route through Netlify's edge on production,
+// avoiding direct access to the Icelandic origin server from foreign CDN nodes.
+const WOD_ORIGIN = 'https://wod-odinn.belgingur.is';
+const API_ROOT = window.location.hostname === 'localhost'
+  ? WOD_ORIGIN
+  : '/proxy';
+
+const BASE = `${API_ROOT}/api/v2/widget/meteo`;
 const FORECAST_ID = 'schedule/island-8-2-da3d-noahmp/2';
 
 interface RawStation {
@@ -53,7 +60,7 @@ export async function fetchCourses(): Promise<Course[]> {
 }
 
 export function getForecastUrl(lat: number, lon: number): string {
-  return `https://wod-odinn.belgingur.is/api/v2/data/point/${FORECAST_ID}/latlon%2F${lat}%2C${lon}/meteogram.xml`;
+  return `${API_ROOT}/api/v2/data/point/${FORECAST_ID}/latlon%2F${lat}%2C${lon}/meteogram.xml`;
 }
 
 const xmlParser = new XMLParser({ ignoreAttributes: false, attributeNamePrefix: '@_' });
