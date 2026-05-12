@@ -35,12 +35,21 @@ export async function fetchCourses(): Promise<Course[]> {
 
   const configUrl = `${BASE}/config/golf`;
   const configRes = await fetch(configUrl);
+  if (!configRes.ok) throw new Error(`Config HTTP ${configRes.status}`);
   const config: ConfigResponse = await configRes.json();
 
+  if (!config.forecasts?.length) {
+    throw new Error(`No forecasts in config. Keys: ${Object.keys(config).join(', ')}`);
+  }
   const forecastMeta = config.forecasts[0];
 
   const forecastRes = await fetch(forecastMeta.url);
+  if (!forecastRes.ok) throw new Error(`Forecast HTTP ${forecastRes.status}`);
   const forecastData = await forecastRes.json();
+
+  if (!forecastData.stations?.length) {
+    throw new Error(`No stations in forecast. Keys: ${Object.keys(forecastData).join(', ')}`);
+  }
 
   cachedCourses = (forecastData.stations as RawStation[]).map((s) => ({
     id: s.id,
