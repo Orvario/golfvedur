@@ -1,7 +1,9 @@
 import { XMLParser } from 'fast-xml-parser';
 import type { Course, HourlySlot, DayGroup } from '../types';
 
-const WOD_ORIGIN = 'https://wod-odinn.belgingur.is';
+// wod.belgingur.is is the public load balancer (accessible worldwide).
+// wod-odinn.belgingur.is is an internal Icelandic host — do not use from production.
+const WOD_ORIGIN = 'https://wod.belgingur.is';
 const BASE = `${WOD_ORIGIN}/api/v2/widget/meteo`;
 const FORECAST_ID = 'schedule/island-8-2-da3d-noahmp/2';
 
@@ -42,8 +44,10 @@ export async function fetchCourses(): Promise<Course[]> {
     throw new Error(`No forecasts in config. Keys: ${Object.keys(config).join(', ')}`);
   }
   const forecastMeta = config.forecasts[0];
+  // The config returns an internal wod-odinn URL — rewrite to the public host.
+  const forecastUrl = forecastMeta.url.replace('wod-odinn.belgingur.is', 'wod.belgingur.is');
 
-  const forecastRes = await fetch(forecastMeta.url);
+  const forecastRes = await fetch(forecastUrl);
   if (!forecastRes.ok) throw new Error(`Forecast HTTP ${forecastRes.status}`);
   const forecastData = await forecastRes.json();
 
@@ -63,7 +67,7 @@ export async function fetchCourses(): Promise<Course[]> {
 }
 
 export function getForecastUrl(lat: number, lon: number): string {
-  return `${WOD_ORIGIN}/api/v2/data/point/${FORECAST_ID}/latlon%2F${lat}%2C${lon}/meteogram.xml`;
+  return `https://wod.belgingur.is/api/v2/data/point/${FORECAST_ID}/latlon%2F${lat}%2C${lon}/meteogram.xml`;
 }
 
 const xmlParser = new XMLParser({ ignoreAttributes: false, attributeNamePrefix: '@_' });
