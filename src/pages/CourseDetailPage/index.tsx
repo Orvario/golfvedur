@@ -108,18 +108,17 @@ const COL_W = 64;
 
 interface TimelineStripProps {
   hours: HourlySlot[];
-  nowIdx: number;
   activeIdx: number;
   onActiveChange: (idx: number) => void;
   scrollRef: React.RefObject<HTMLDivElement | null>;
 }
 
-function HourlyTimelineStrip({ hours, nowIdx, activeIdx, onActiveChange, scrollRef }: TimelineStripProps) {
-  // On mount, scroll to bring the current hour to the left edge
+function HourlyTimelineStrip({ hours, activeIdx, onActiveChange, scrollRef }: TimelineStripProps) {
+  // Scroll strip to show the active column
   useEffect(() => {
     if (!scrollRef.current) return;
-    scrollRef.current.scrollLeft = Math.max(0, nowIdx * COL_W - 12);
-  }, [nowIdx]);
+    scrollRef.current.scrollLeft = activeIdx * COL_W;
+  }, [activeIdx]);
 
   function handleScroll() {
     if (!scrollRef.current) return;
@@ -186,7 +185,7 @@ function HourlyTimelineStrip({ hours, nowIdx, activeIdx, onActiveChange, scrollR
         <div className="now-timeline" style={{ width: totalWidth, display: 'flex' }}>
           {hours.map((slot, i) => {
             const isActive = i === activeIdx;
-            const isNow = i === nowIdx;
+            const isNow = i === 0;
             const hourLabel = slot.from.toLocaleTimeString('is-IS', {
               hour: '2-digit', minute: '2-digit', hour12: false,
             });
@@ -254,16 +253,16 @@ function HourlyTimelineStrip({ hours, nowIdx, activeIdx, onActiveChange, scrollR
 
 function NowHero({ days }: { course: Course; days: DayGroup[] }) {
   const now = new Date();
-  const allHours = useMemo(() => days.flatMap((d) => d.hours), [days]);
-  const nowIdx = useMemo(() => {
-    const idx = allHours.findIndex((h) => h.from <= now && h.to > now);
-    return Math.max(0, idx);
-  }, [allHours]);
 
-  const [activeIdx, setActiveIdx] = useState(nowIdx);
+  // Slice away past hours so the strip always starts at the current hour
+  const allHours = useMemo(() => {
+    const hours = days.flatMap((d) => d.hours);
+    const idx = hours.findIndex((h) => h.from <= now && h.to > now);
+    return idx > 0 ? hours.slice(idx) : hours;
+  }, [days]);
+
+  const [activeIdx, setActiveIdx] = useState(0);
   const stripScrollRef = useRef<HTMLDivElement>(null);
-
-  useEffect(() => { setActiveIdx(nowIdx); }, [nowIdx]);
 
   // Sync strip scroll position whenever activeIdx changes programmatically
   function changeActive(idx: number) {
@@ -324,8 +323,6 @@ function NowHero({ days }: { course: Course; days: DayGroup[] }) {
   }
 
   const slot = allHours[activeIdx] ?? allHours[0];
-  const isNowSlot = activeIdx === nowIdx;
-
   const slotDay = days.find((d) => d.hours.some((h) => h.from.getTime() === slot?.from.getTime()));
   const dayHours = slotDay?.hours ?? days[0]?.hours ?? [];
   const dayTemps = dayHours.map((h) => h.temperatureC);
@@ -462,7 +459,7 @@ function NowHero({ days }: { course: Course; days: DayGroup[] }) {
       }}>
         <HourlyTimelineStrip
           hours={allHours}
-          nowIdx={nowIdx}
+
           activeIdx={activeIdx}
           onActiveChange={changeActive}
           scrollRef={stripScrollRef}
