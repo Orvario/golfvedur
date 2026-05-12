@@ -827,11 +827,14 @@ export function CourseDetailPage() {
               background: 'rgba(255,255,255,0.15)',
               border: 'none', color: '#fff', borderRadius: 6,
               padding: '5px 10px', cursor: 'pointer',
-              fontSize: 16, fontFamily: 'inherit', flexShrink: 0,
+              fontSize: 12, fontFamily: 'inherit', flexShrink: 0,
+              display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 1,
+              fontWeight: 600, lineHeight: 1.2,
             }}
             aria-label="Deila veðri"
           >
-            ↑
+            <span style={{ fontSize: 16 }}>↑</span>
+            <span>Deila</span>
           </button>
         )}
       </div>
