@@ -1,11 +1,8 @@
 import { XMLParser } from 'fast-xml-parser';
 import type { Course, HourlySlot, DayGroup } from '../types';
 
-// wod.belgingur.is is the public load balancer (accessible worldwide).
-// wod-odinn.belgingur.is is an internal Icelandic host — do not use from production.
-const WOD_ORIGIN = 'https://wod.belgingur.is';
-const BASE = `${WOD_ORIGIN}/api/v2/widget/meteo`;
-const FORECAST_ID = 'schedule/island-8-2-da3d-noahmp/2';
+// API calls go through Netlify serverless functions to avoid browser origin restrictions.
+// The upstream API (wod.belgingur.is) only allows requests from golfvedur.is origin.
 
 interface RawStation {
   id: string;
@@ -26,36 +23,20 @@ interface RawStation {
   };
 }
 
-interface ConfigResponse {
-  forecasts: Array<{ id: string; name: string; url: string }>;
-}
-
 let cachedCourses: Course[] | null = null;
 
 export async function fetchCourses(): Promise<Course[]> {
   if (cachedCourses) return cachedCourses;
 
-  const configUrl = `${BASE}/config/golf`;
-  const configRes = await fetch(configUrl);
-  if (!configRes.ok) throw new Error(`Config HTTP ${configRes.status}`);
-  const config: ConfigResponse = await configRes.json();
+  const res = await fetch('/.netlify/functions/courses');
+  if (!res.ok) throw new Error(`Courses HTTP ${res.status}`);
+  const stations: RawStation[] = await res.json();
 
-  if (!config.forecasts?.length) {
-    throw new Error(`No forecasts in config. Keys: ${Object.keys(config).join(', ')}`);
-  }
-  const forecastMeta = config.forecasts[0];
-  // The config returns an internal wod-odinn URL — rewrite to the public host.
-  const forecastUrl = forecastMeta.url.replace('wod-odinn.belgingur.is', 'wod.belgingur.is');
-
-  const forecastRes = await fetch(forecastUrl);
-  if (!forecastRes.ok) throw new Error(`Forecast HTTP ${forecastRes.status}`);
-  const forecastData = await forecastRes.json();
-
-  if (!forecastData.stations?.length) {
-    throw new Error(`No stations in forecast. Keys: ${Object.keys(forecastData).join(', ')}`);
+  if (!Array.isArray(stations) || stations.length === 0) {
+    throw new Error('No courses returned from server');
   }
 
-  cachedCourses = (forecastData.stations as RawStation[]).map((s) => ({
+  cachedCourses = stations.map((s) => ({
     id: s.id,
     name: s.name,
     lat: s.lat,
@@ -66,14 +47,10 @@ export async function fetchCourses(): Promise<Course[]> {
   return cachedCourses;
 }
 
-export function getForecastUrl(lat: number, lon: number): string {
-  return `https://wod.belgingur.is/api/v2/data/point/${FORECAST_ID}/latlon%2F${lat}%2C${lon}/meteogram.xml`;
-}
-
 const xmlParser = new XMLParser({ ignoreAttributes: false, attributeNamePrefix: '@_' });
 
 export async function fetchForecast(lat: number, lon: number): Promise<DayGroup[]> {
-  const url = getForecastUrl(lat, lon);
+  const url = `/.netlify/functions/forecast?lat=${lat}&lon=${lon}`;
   const res = await fetch(url);
   const xml = await res.text();
   const parsed = xmlParser.parse(xml);
