@@ -23,6 +23,36 @@ function formatTemp(t: number): string {
   return r > 0 ? `+${r}°` : `${r}°`;
 }
 
+const WIND_NAME_IS: Record<string, string> = {
+  'calm': 'Logn',
+  'light air': 'Andvari',
+  'light breeze': 'Kul',
+  'gentle breeze': 'Gola',
+  'moderate breeze': 'Stinningsgola',
+  'fresh breeze': 'Kaldi',
+  'strong breeze': 'Stór kaldi',
+  'near gale': 'Allhvasst',
+  'gale': 'Hvassviðri',
+  'strong gale': 'Stormur',
+  'storm': 'Rok',
+  'violent storm': 'Ofsaveður',
+  'hurricane': 'Fárviðri',
+};
+
+function translateWindName(name: string): string {
+  return WIND_NAME_IS[name.toLowerCase()] ?? name;
+}
+
+const IS_MONTHS = ['jan', 'feb', 'mar', 'apr', 'maí', 'jún', 'júl', 'ágú', 'sep', 'okt', 'nóv', 'des'];
+const IS_WEEKDAYS = ['sunnudagur', 'mánudagur', 'þriðjudagur', 'miðvikudagur', 'fimmtudagur', 'föstudagur', 'laugardagur'];
+
+function formatDateIS(date: Date): string {
+  const weekday = IS_WEEKDAYS[date.getDay()];
+  const day = date.getDate();
+  const month = IS_MONTHS[date.getMonth()];
+  return `${weekday} ${day}. ${month}`;
+}
+
 // Group hours into 6-hour slot blocks: 01-07, 07-13, 13-19, 19-01
 type SlotLabel = 'Nótt' | 'Morgunn' | 'Síðdegis' | 'Kvöld';
 interface SixHourSlot {
@@ -310,9 +340,7 @@ function NowHero({ days }: { course: Course; days: DayGroup[] }) {
   const fl = slot ? Math.round(feelsLike(slot.temperatureC, slot.windMps)) : null;
   const conditionText = slot ? getConditionText(slot.symbolVar, slot.symbolName) : '';
 
-  const slotDateLabel = slot
-    ? slot.from.toLocaleDateString('is-IS', { weekday: 'long', day: 'numeric', month: 'long' })
-    : '';
+  const slotDateLabel = slot ? formatDateIS(slot.from) : '';
 
   return (
     <div
@@ -388,7 +416,7 @@ function NowHero({ days }: { course: Course; days: DayGroup[] }) {
         {/* Wind */}
         {slot && (
           <div style={{ color: 'rgba(255,255,255,0.7)', fontSize: 13, marginTop: 5 }}>
-            {slot.windName} frá {slot.windCode} · {slot.windMps.toFixed(1)} m/s
+            {translateWindName(slot.windName)} frá {slot.windCode} · {slot.windMps.toFixed(1)} m/s
           </div>
         )}
 
@@ -532,11 +560,7 @@ function ForecastList({ days }: { days: DayGroup[] }) {
               >
                 {dayIdx === 0 ? 'Í dag' : dayIdx === 1 ? 'Á morgun' : ''}
                 <span style={{ fontWeight: 400, color: '#888', marginLeft: dayIdx <= 1 ? 8 : 0 }}>
-                  {day.date.toLocaleDateString('is-IS', {
-                    weekday: 'long',
-                    day: 'numeric',
-                    month: 'long',
-                  })}
+                  {formatDateIS(day.date)}
                 </span>
               </span>
             </div>

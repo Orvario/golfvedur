@@ -105,7 +105,9 @@ function groupByDay(slots: HourlySlot[]): DayGroup[] {
     else if (key === tomorrow) label = 'Á morgun';
     else {
       const d = new Date(key);
-      label = d.toLocaleDateString('is-IS', { weekday: 'long', day: 'numeric', month: 'short' });
+      const IS_MONTHS_SHORT = ['jan', 'feb', 'mar', 'apr', 'maí', 'jún', 'júl', 'ágú', 'sep', 'okt', 'nóv', 'des'];
+      const IS_WEEKDAYS = ['sun', 'mán', 'þri', 'mið', 'fim', 'fös', 'lau'];
+      label = `${IS_WEEKDAYS[d.getDay()]} ${d.getDate()}. ${IS_MONTHS_SHORT[d.getMonth()]}`;
     }
     return { date: new Date(key), label, hours };
   });
