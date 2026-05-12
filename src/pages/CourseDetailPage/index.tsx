@@ -930,7 +930,7 @@ export function CourseDetailPage() {
                 transition: 'color 0.12s',
               }}
             >
-              <span>{tab === 'now' ? 'Núna' : 'Næstu 10 dagar'}</span>
+              <span>{tab === 'now' ? 'Núna' : 'Næstu 5 dagar'}</span>
             </button>
           ))}
         </div>
