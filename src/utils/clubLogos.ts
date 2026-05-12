@@ -4,5 +4,6 @@
  * Falls back to Google favicon service for any club not listed.
  */
 export const CLUB_LOGOS: Record<string, string> = {
+  GD: '/logos/GD.png',
   GS: '/logos/GS.png',
 };
