@@ -3,7 +3,7 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { fetchCourses, fetchForecast } from '../../api';
 import type { Course, DayGroup, HourlySlot } from '../../types';
 import { HourlyStrip, ROW_TIME_H, ROW_ICON_H, ROW_TEMP_H, ROW_PRECIP_H, ROW_WIND_H } from '../../components/HourlyStrip';
-import { WeatherIcon, getWeatherGradient, getConditionText, getEmoji } from '../../components/WeatherIcon';
+import { WeatherIcon, getConditionText, getEmoji } from '../../components/WeatherIcon';
 
 type MainTab = 'now' | 'forecast';
 
@@ -293,145 +293,107 @@ function NowHero({ days }: { course: Course; days: DayGroup[] }) {
   const low = Math.min(...dayTemps);
   const dayPrecip = dayHours.reduce((sum, h) => sum + h.precipitationMm, 0);
 
-  const bg = slot
-    ? getWeatherGradient(slot.symbolVar, slot.symbolName, slot.from.getHours())
-    : 'linear-gradient(180deg, #4a6080 0%, #8aa0b0 100%)';
-
   const fl = slot ? Math.round(feelsLike(slot.temperatureC, slot.windMps)) : null;
   const conditionText = slot ? getConditionText(slot.symbolVar, slot.symbolName) : '';
-
   const slotDateLabel = slot ? formatDateIS(slot.from) : '';
 
   return (
     <div
       className="now-hero"
       style={{
-        background: bg,
+        background: '#eaecf2',
         display: 'flex',
         flexDirection: 'column',
         position: 'relative',
         overflow: 'hidden',
-        transition: 'background 0.6s ease',
       }}
     >
-      {slot && isRainy(slot.symbolVar, slot.symbolName) && <RainStreaks />}
-
-      {/* Hero content — full area is draggable */}
+      {/* Main weather card — draggable to scrub through hours */}
       <div
         ref={heroRef}
         style={{
           flex: 1,
           display: 'flex',
           flexDirection: 'column',
-          alignItems: 'center',
-          justifyContent: 'center',
-          padding: '32px 24px 16px',
-          zIndex: 1,
-          position: 'relative',
           cursor: 'grab',
           userSelect: 'none',
-          touchAction: 'pan-y', // allow vertical scroll; we intercept horizontal
+          touchAction: 'pan-y',
+          overflowY: 'auto',
         }}
         onMouseDown={onHeroMouseDown}
         onTouchStart={onHeroTouchStart}
         onTouchMove={onHeroTouchMove}
         onTouchEnd={onHeroTouchEnd}
       >
-        {slot && (
-          <div style={{ marginBottom: 10, textAlign: 'center' }}>
-            <div style={{
-              fontSize: 32, fontWeight: 300, color: '#fff',
-              letterSpacing: 1, lineHeight: 1,
-              textShadow: '0 1px 10px rgba(0,0,0,0.2)',
-            }}>
-              {slot.from.toLocaleTimeString('is-IS', { hour: '2-digit', minute: '2-digit', hour12: false })}
-            </div>
-            <div style={{
-              fontSize: 13, color: 'rgba(255,255,255,0.65)',
-              fontWeight: 500, marginTop: 4, letterSpacing: 0.2,
-            }}>
-              {slotDateLabel}
-            </div>
-          </div>
-        )}
-
-        {slot && (
-          <div style={{ marginBottom: 6 }}>
-            <span style={{ fontSize: 60, lineHeight: 1 }}>
-              {getEmoji(slot.symbolVar, slot.symbolName)}
-            </span>
-          </div>
-        )}
-
-        {/* Temperature */}
+        {/* Big weather card */}
         {slot && (
           <div style={{
-            fontSize: 80, fontWeight: 300, color: '#fff',
-            lineHeight: 1, letterSpacing: -2,
-            textShadow: '0 2px 16px rgba(0,0,0,0.25)',
+            background: '#003c71',
+            margin: '12px 12px 0',
+            borderRadius: 12,
+            padding: '20px 20px 22px',
+            color: '#fff',
           }}>
-            {formatTemp(slot.temperatureC)}
-          </div>
-        )}
+            {/* Date + time */}
+            <div style={{
+              display: 'flex', alignItems: 'baseline',
+              justifyContent: 'space-between', marginBottom: 16,
+            }}>
+              <div style={{
+                fontSize: 13, fontWeight: 500,
+                color: 'rgba(255,255,255,0.65)', letterSpacing: 0.2,
+              }}>
+                {slotDateLabel}
+              </div>
+              <div style={{
+                fontSize: 28, fontWeight: 300, letterSpacing: 1, lineHeight: 1,
+              }}>
+                {slot.from.toLocaleTimeString('is-IS', { hour: '2-digit', minute: '2-digit', hour12: false })}
+              </div>
+            </div>
 
-        {/* Feels like */}
-        {fl !== null && (
-          <div style={{ color: 'rgba(255,255,255,0.8)', fontSize: 15, marginTop: 7 }}>
-            Líður eins og {formatTemp(fl)}
-          </div>
-        )}
-
-        {/* Wind */}
-        {slot && (
-          <div style={{ color: 'rgba(255,255,255,0.7)', fontSize: 13, marginTop: 5 }}>
-            {translateWindName(slot.windName)} frá {slot.windCode} · {slot.windMps.toFixed(1)} m/s
-          </div>
-        )}
-
-        {/* Condition */}
-        <div style={{
-          color: '#fff', fontSize: 18, fontWeight: 600, marginTop: 22,
-          textAlign: 'center', textShadow: '0 1px 8px rgba(0,0,0,0.3)',
-        }}>
-          {conditionText}.
-        </div>
-
-        {/* High / low / precip for that day */}
-        <div style={{
-          display: 'flex', alignItems: 'center', gap: 16, marginTop: 16,
-          color: 'rgba(255,255,255,0.85)', fontSize: 14,
-        }}>
-          <span>
-            <span style={{ color: '#ffca80' }}>↑</span>
-            {' '}<span style={{ fontWeight: 600 }}>{formatTemp(high)}</span>
-          </span>
-          <span style={{ color: 'rgba(255,255,255,0.3)' }}>·</span>
-          <span>
-            <span style={{ color: '#80c8ff' }}>↓</span>
-            {' '}<span style={{ fontWeight: 600 }}>{formatTemp(low)}</span>
-          </span>
-          {dayPrecip > 0.05 && (
-            <>
-              <span style={{ color: 'rgba(255,255,255,0.3)' }}>·</span>
-              <span style={{ color: 'rgba(180,220,255,0.9)', fontWeight: 600 }}>
-                {dayPrecip.toFixed(1)} mm
+            {/* Icon + temperature */}
+            <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 8 }}>
+              <span style={{ fontSize: 56, lineHeight: 1 }}>
+                {getEmoji(slot.symbolVar, slot.symbolName)}
               </span>
-            </>
-          )}
-        </div>
+              <div>
+                <div style={{
+                  fontSize: 68, fontWeight: 300, lineHeight: 1, letterSpacing: -2,
+                }}>
+                  {formatTemp(slot.temperatureC)}
+                </div>
+                <div style={{ fontSize: 14, fontWeight: 600, marginTop: 2, letterSpacing: 0.2 }}>
+                  {conditionText}
+                </div>
+              </div>
+            </div>
+
+            {/* Stat rows */}
+            <div style={{
+              borderTop: '1px solid rgba(255,255,255,0.15)',
+              marginTop: 14, paddingTop: 14,
+              display: 'flex', flexDirection: 'column', gap: 8,
+            }}>
+              <StatRow label="Líður eins og" value={`${fl !== null && fl > 0 ? '+' : ''}${fl}°`} />
+              <StatRow label="Vindur" value={`${translateWindName(slot.windName)} frá ${slot.windCode} · ${slot.windMps.toFixed(1)} m/s`} />
+              <StatRow label="Hæsta / lægsta" value={`${formatTemp(high)} / ${formatTemp(low)}`} />
+              {dayPrecip > 0.05 && (
+                <StatRow label="Rigning dagsins" value={`${dayPrecip.toFixed(1)} mm`} />
+              )}
+            </div>
+          </div>
+        )}
       </div>
 
       {/* Scrollable hourly timeline */}
       <div style={{
-        zIndex: 1, position: 'relative',
-        borderTop: '1px solid rgba(255,255,255,0.15)',
-        background: 'rgba(0,0,0,0.22)',
-        backdropFilter: 'blur(8px)',
-        WebkitBackdropFilter: 'blur(8px)',
+        position: 'relative',
+        borderTop: '1px solid rgba(0,0,0,0.08)',
+        background: '#003c71',
       }}>
         <HourlyTimelineStrip
           hours={allHours}
-
           activeIdx={activeIdx}
           onActiveChange={changeActive}
           scrollRef={stripScrollRef}
@@ -441,59 +403,15 @@ function NowHero({ days }: { course: Course; days: DayGroup[] }) {
   );
 }
 
-function isRainy(symbolVar: string, symbolName: string): boolean {
-  const n = symbolName.toLowerCase();
-  const v = symbolVar.toLowerCase();
-  return n.includes('rain') || n.includes('shower') || v.includes('09') || v.includes('10') || v.includes('05') || v.includes('06');
-}
-
-function RainStreaks() {
-  const streaks = useMemo(() => {
-    return Array.from({ length: 20 }, (_, i) => ({
-      left: `${(i * 5.3) % 100}%`,
-      animationDelay: `${(i * 0.13) % 1.5}s`,
-      animationDuration: `${0.7 + (i % 5) * 0.12}s`,
-      opacity: 0.08 + (i % 4) * 0.05,
-    }));
-  }, []);
-
+function StatRow({ label, value }: { label: string; value: string }) {
   return (
-    <div
-      style={{
-        position: 'absolute',
-        inset: 0,
-        overflow: 'hidden',
-        pointerEvents: 'none',
-        zIndex: 0,
-      }}
-    >
-      <style>{`
-        @keyframes rain-fall {
-          from { transform: translateY(-40px); opacity: 0; }
-          10%  { opacity: 1; }
-          90%  { opacity: 1; }
-          to   { transform: translateY(100vh); opacity: 0; }
-        }
-      `}</style>
-      {streaks.map((s, i) => (
-        <div
-          key={i}
-          style={{
-            position: 'absolute',
-            left: s.left,
-            top: 0,
-            width: 1.5,
-            height: 24,
-            background: 'rgba(180,210,255,0.6)',
-            borderRadius: 1,
-            animation: `rain-fall ${s.animationDuration} ${s.animationDelay} linear infinite`,
-            opacity: s.opacity,
-          }}
-        />
-      ))}
+    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: 13 }}>
+      <span style={{ color: 'rgba(255,255,255,0.6)', fontWeight: 500 }}>{label}</span>
+      <span style={{ color: '#fff', fontWeight: 600 }}>{value}</span>
     </div>
   );
 }
+
 
 // ─── Forecast List ─────────────────────────────────────────────────────────────
 
@@ -726,26 +644,13 @@ export function CourseDetailPage() {
       });
   }, [id]);
 
-  // Determine header bg — transparent over hero, solid over list
-  const headerBg = mainTab === 'now' && days.length > 0
-    ? 'transparent'
-    : '#003c71';
-
-  // For gradient header when on "now" tab
-  const nowSlot = days[0]?.hours[0];
-  const heroGrad = nowSlot
-    ? getWeatherGradient(nowSlot.symbolVar, nowSlot.symbolName, nowSlot.from.getHours())
-    : undefined;
-
   const headerStyle: React.CSSProperties = {
     position: 'fixed',
     top: 0,
     left: 0,
     right: 0,
     zIndex: 200,
-    background: mainTab === 'now' && heroGrad
-      ? heroGrad.split(' ')[2] // Use first color stop of gradient
-      : '#003c71',
+    background: '#003c71',
     borderBottom: mainTab === 'forecast' ? '1px solid rgba(255,255,255,0.1)' : 'none',
     padding: '0 16px',
     display: 'flex',
@@ -754,10 +659,8 @@ export function CourseDetailPage() {
     gap: 10,
   };
 
-  void headerBg; // suppress unused
-
   return (
-    <div style={{ minHeight: '100vh', background: '#f5f5f0', paddingTop: 52, paddingBottom: 56 }}>
+    <div style={{ minHeight: '100vh', background: '#eaecf2', paddingTop: 52, paddingBottom: 56 }}>
       {/* Fixed top header */}
       <div style={headerStyle}>
         <button
