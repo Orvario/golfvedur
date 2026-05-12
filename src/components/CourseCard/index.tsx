@@ -3,8 +3,10 @@ import { useNavigate } from 'react-router-dom';
 import type { Course, HourlySlot } from '../../types';
 import { WeatherIcon } from '../WeatherIcon';
 import { WindArrow } from '../WindArrow';
+import { CLUB_LOGOS } from '../../utils/clubLogos';
 
-export function getClubFaviconUrl(webpage: string | null | undefined): string | null {
+export function getClubLogoUrl(abbr: string, webpage: string | null | undefined): string | null {
+  if (CLUB_LOGOS[abbr]) return CLUB_LOGOS[abbr];
   if (!webpage) return null;
   try {
     const domain = new URL(webpage).hostname;
@@ -14,14 +16,19 @@ export function getClubFaviconUrl(webpage: string | null | undefined): string | 
   }
 }
 
-function ClubBadge({ url, name }: { url: string | null; name: string }) {
+/** @deprecated use getClubLogoUrl */
+export function getClubFaviconUrl(webpage: string | null | undefined): string | null {
+  return getClubLogoUrl('', webpage);
+}
+
+function ClubBadge({ url, name, size = 28 }: { url: string | null; name: string; size?: number }) {
   const [failed, setFailed] = useState(false);
   if (!url || failed) {
     return (
       <div style={{
-        width: 28, height: 28, borderRadius: '50%', flexShrink: 0,
+        width: size, height: size, borderRadius: '50%', flexShrink: 0,
         background: '#003c71', display: 'flex', alignItems: 'center',
-        justifyContent: 'center', fontSize: 14,
+        justifyContent: 'center', fontSize: size * 0.5,
       }}>
         ⛳
       </div>
@@ -33,7 +40,7 @@ function ClubBadge({ url, name }: { url: string | null; name: string }) {
       alt={name}
       onError={() => setFailed(true)}
       style={{
-        width: 28, height: 28, borderRadius: '50%', flexShrink: 0,
+        width: size, height: size, borderRadius: '50%', flexShrink: 0,
         objectFit: 'contain', background: '#f5f5f5',
         border: '1px solid #e4e4de',
       }}
@@ -91,7 +98,7 @@ export function CourseCard({ course, currentWeather, isFavourite, onToggleFavour
 
       {/* Course info */}
       <div style={{ flex: 1, minWidth: 0, display: 'flex', alignItems: 'center', gap: 10 }}>
-        <ClubBadge url={getClubFaviconUrl(course.extra.webpage)} name={course.extra.club} />
+        <ClubBadge url={getClubLogoUrl(course.extra.abbr, course.extra.webpage)} name={course.extra.club} />
         <div style={{ minWidth: 0 }}>
           <div style={{
             fontWeight: 700, fontSize: 14, color: '#003c71',

@@ -5,7 +5,7 @@ import type { Course, DayGroup, HourlySlot } from '../../types';
 import { HourlyStrip, ROW_TIME_H, ROW_ICON_H, ROW_TEMP_H, ROW_PRECIP_H, ROW_WIND_H } from '../../components/HourlyStrip';
 import { WeatherIcon, getWeatherGradient, getConditionText, getEmoji } from '../../components/WeatherIcon';
 import { getSunTimes, formatSunTime } from '../../utils/sun';
-import { getClubFaviconUrl } from '../../components/CourseCard';
+import { getClubLogoUrl } from '../../components/CourseCard';
 
 type MainTab = 'now' | 'forecast';
 
@@ -820,7 +820,7 @@ export function CourseDetailPage() {
         </button>
         <div style={{ flex: 1, minWidth: 0, display: 'flex', alignItems: 'center', gap: 10 }}>
           {course && (
-            <HeaderClubBadge url={getClubFaviconUrl(course.extra.webpage)} name={course.extra.club} />
+            <HeaderClubBadge url={getClubLogoUrl(course.extra.abbr, course.extra.webpage)} name={course.extra.club} />
           )}
           <div style={{ minWidth: 0 }}>
             <div style={{
