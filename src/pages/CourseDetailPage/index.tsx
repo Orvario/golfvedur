@@ -4,6 +4,7 @@ import { fetchCourses, fetchForecast } from '../../api';
 import type { Course, DayGroup, HourlySlot } from '../../types';
 import { HourlyStrip, ROW_TIME_H, ROW_ICON_H, ROW_TEMP_H, ROW_PRECIP_H, ROW_WIND_H } from '../../components/HourlyStrip';
 import { WeatherIcon, getWeatherGradient, getConditionText, getEmoji } from '../../components/WeatherIcon';
+import { getSunTimes, formatSunTime } from '../../utils/sun';
 
 type MainTab = 'now' | 'forecast';
 
@@ -490,12 +491,14 @@ function RainStreaks() {
 
 type ForecastView = 'list' | 'graph';
 
-function ForecastList({ days }: { days: DayGroup[] }) {
+function ForecastList({ days, course }: { days: DayGroup[]; course: Course }) {
   const [view, setView] = useState<ForecastView>('list');
 
   return (
     <div style={{ background: '#eaecf2', minHeight: 'calc(100dvh - 108px)', paddingBottom: 32 }}>
-      {days.map((day, dayIdx) => (
+      {days.map((day, dayIdx) => {
+        const sun = getSunTimes(course.lat, course.lon, day.date);
+        return (
         <div key={dayIdx} style={{ marginBottom: 0 }}>
           {/* Day header */}
           <div style={{
@@ -624,8 +627,33 @@ function ForecastList({ days }: { days: DayGroup[] }) {
               </div>
             )}
           </div>
+
+          {/* Sunrise / sunset row */}
+          {!sun.polarNight && (
+            <div style={{
+              background: '#fff',
+              borderBottom: '1px solid #dde0e8',
+              padding: '9px 16px',
+              display: 'flex',
+              justifyContent: 'flex-end',
+              gap: 20,
+              fontSize: 12,
+              color: '#888',
+              fontWeight: 500,
+            }}>
+              {sun.midnightSun ? (
+                <span style={{ color: '#f5a623' }}>Miðnætursól — sól sest ekki</span>
+              ) : (
+                <>
+                  <span>🌅 {formatSunTime(sun.sunrise)}</span>
+                  <span>🌇 {formatSunTime(sun.sunset)}</span>
+                </>
+              )}
+            </div>
+          )}
         </div>
-      ))}
+        );
+      })}
     </div>
   );
 }
@@ -778,6 +806,34 @@ export function CourseDetailPage() {
             </div>
           )}
         </div>
+
+        {/* Share button */}
+        {course && days.length > 0 && (
+          <button
+            onClick={() => {
+              const now = new Date();
+              const slot = days.flatMap(d => d.hours).find(h => h.from <= now && h.to > now)
+                ?? days[0]?.hours[0];
+              const text = slot
+                ? `${course.name} — ${Math.round(slot.temperatureC) > 0 ? '+' : ''}${Math.round(slot.temperatureC)}° · ${slot.windMps.toFixed(1)} m/s · ${slot.windCode}`
+                : course.name;
+              if (navigator.share) {
+                navigator.share({ title: 'Golfveður', text, url: window.location.href });
+              } else {
+                navigator.clipboard?.writeText(`${text}\n${window.location.href}`);
+              }
+            }}
+            style={{
+              background: 'rgba(255,255,255,0.15)',
+              border: 'none', color: '#fff', borderRadius: 6,
+              padding: '5px 10px', cursor: 'pointer',
+              fontSize: 16, fontFamily: 'inherit', flexShrink: 0,
+            }}
+            aria-label="Deila veðri"
+          >
+            ↑
+          </button>
+        )}
       </div>
 
       {/* Content */}
@@ -793,7 +849,7 @@ export function CourseDetailPage() {
           {mainTab === 'now' && <NowHero course={course} days={days} />}
           {mainTab === 'forecast' && (
             <>
-              <ForecastList days={days} />
+              <ForecastList days={days} course={course} />
               <CourseInfoCard course={course} />
             </>
           )}
