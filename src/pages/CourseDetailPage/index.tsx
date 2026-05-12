@@ -11,11 +11,6 @@ const ROW_LABELS = ['Tími', 'Veður', 'Hitastig', 'Rigning (mm)', 'Vindur'];
 const ROW_HEIGHTS = [ROW_TIME_H, ROW_ICON_H, ROW_TEMP_H, ROW_PRECIP_H, ROW_WIND_H];
 
 // Wind chill approximation (°C, wind in m/s)
-function feelsLike(tempC: number, windMps: number): number {
-  if (tempC > 10 || windMps < 1.3) return tempC;
-  const v = windMps * 3.6; // km/h
-  return 13.12 + 0.6215 * tempC - 11.37 * Math.pow(v, 0.16) + 0.3965 * tempC * Math.pow(v, 0.16);
-}
 
 function formatTemp(t: number): string {
   const r = Math.round(t);
@@ -547,12 +542,10 @@ function ForecastList({ days }: { days: DayGroup[] }) {
           <div style={{ background: '#fff', borderBottom: '1px solid #dde0e8' }}>
             {view === 'list' ? (
               day.hours.map((slot, i) => {
-                const fl = Math.round(feelsLike(slot.temperatureC, slot.windMps));
                 const time = slot.from.toLocaleTimeString('is-IS', {
                   hour: '2-digit', minute: '2-digit', hour12: false,
                 });
                 const tempInt = Math.round(slot.temperatureC);
-                const flInt = fl;
                 return (
                   <div
                     key={i}
@@ -587,14 +580,9 @@ function ForecastList({ days }: { days: DayGroup[] }) {
                       {tempInt > 0 ? `+${tempInt}` : tempInt}°
                     </div>
 
-                    {/* Feels like */}
-                    <div style={{ flex: 1, fontSize: 13, color: '#777' }}>
-                      Líður eins og {flInt > 0 ? `+${flInt}` : flInt}°
-                    </div>
-
                     {/* Precipitation */}
                     <div style={{
-                      flexShrink: 0, minWidth: 52, textAlign: 'right',
+                      flex: 1, textAlign: 'right',
                       fontSize: 13, fontWeight: 600,
                       color: slot.precipitationMm >= 0.1 ? '#4a90d9' : '#ccc',
                     }}>
