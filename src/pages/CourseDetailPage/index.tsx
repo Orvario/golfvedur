@@ -377,8 +377,7 @@ function NowHero({ days }: { course: Course; days: DayGroup[] }) {
         onTouchMove={onHeroTouchMove}
         onTouchEnd={onHeroTouchEnd}
       >
-        {/* Date label when not "now" */}
-        {!isNowSlot && slot && (
+        {slot && (
           <div style={{
             fontSize: 13, color: 'rgba(255,255,255,0.7)', marginBottom: 8,
             fontWeight: 500, letterSpacing: 0.2,
