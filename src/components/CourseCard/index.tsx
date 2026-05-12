@@ -6,9 +6,11 @@ import { WindArrow } from '../WindArrow';
 interface Props {
   course: Course;
   currentWeather?: HourlySlot;
+  isFavourite?: boolean;
+  onToggleFavourite?: (id: string) => void;
 }
 
-export function CourseCard({ course, currentWeather }: Props) {
+export function CourseCard({ course, currentWeather, isFavourite, onToggleFavourite }: Props) {
   const navigate = useNavigate();
   const id = encodeURIComponent(course.id);
 
@@ -17,7 +19,7 @@ export function CourseCard({ course, currentWeather }: Props) {
       onClick={() => navigate(`/course/${id}`)}
       style={{
         background: '#fff',
-        border: '1px solid #e4e4de',
+        border: isFavourite ? '1.5px solid #003c71' : '1px solid #e4e4de',
         borderRadius: 10,
         padding: '14px 16px',
         cursor: 'pointer',
@@ -45,62 +47,34 @@ export function CourseCard({ course, currentWeather }: Props) {
             size={32}
           />
         ) : (
-          <div
-            style={{
-              width: 32,
-              height: 32,
-              borderRadius: '50%',
-              background: '#eee',
-              margin: '0 auto',
-            }}
-          />
+          <div style={{ width: 32, height: 32, borderRadius: '50%', background: '#eee', margin: '0 auto' }} />
         )}
       </div>
 
       {/* Course info */}
       <div style={{ flex: 1, minWidth: 0 }}>
-        <div
-          style={{
-            fontWeight: 700,
-            fontSize: 14,
-            color: '#003c71',
-            whiteSpace: 'nowrap',
-            overflow: 'hidden',
-            textOverflow: 'ellipsis',
-          }}
-        >
+        <div style={{
+          fontWeight: 700, fontSize: 14, color: '#003c71',
+          whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis',
+        }}>
           {course.name}
         </div>
-        <div
-          style={{
-            fontSize: 12,
-            color: '#666',
-            marginTop: 2,
-            whiteSpace: 'nowrap',
-            overflow: 'hidden',
-            textOverflow: 'ellipsis',
-          }}
-        >
+        <div style={{
+          fontSize: 12, color: '#666', marginTop: 2,
+          whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis',
+        }}>
           {course.extra.club}
         </div>
       </div>
 
       {/* Current weather stats */}
       {currentWeather && (
-        <div
-          style={{
-            display: 'flex',
-            alignItems: 'center',
-            gap: 10,
-            flexShrink: 0,
-          }}
-        >
+        <div style={{ display: 'flex', alignItems: 'center', gap: 10, flexShrink: 0 }}>
           <div style={{ textAlign: 'right' }}>
             <div style={{ fontSize: 18, fontWeight: 700, color: '#222', lineHeight: 1.1 }}>
               {currentWeather.temperatureC > 0
                 ? `+${currentWeather.temperatureC.toFixed(0)}`
-                : currentWeather.temperatureC.toFixed(0)}
-              °
+                : currentWeather.temperatureC.toFixed(0)}°
             </div>
             {currentWeather.precipitationMm > 0.1 && (
               <div style={{ fontSize: 11, color: '#4a90d9', marginTop: 1 }}>
@@ -112,8 +86,31 @@ export function CourseCard({ course, currentWeather }: Props) {
         </div>
       )}
 
-      {/* Chevron */}
-      <div style={{ color: '#ccc', fontSize: 18, flexShrink: 0 }}>›</div>
+      {/* Star / favourite toggle */}
+      {onToggleFavourite && (
+        <button
+          onClick={(e) => { e.stopPropagation(); onToggleFavourite(course.id); }}
+          aria-label={isFavourite ? 'Fjarlægja uppáhald' : 'Setja sem uppáhald'}
+          style={{
+            flexShrink: 0,
+            background: 'none',
+            border: 'none',
+            cursor: 'pointer',
+            padding: '2px 4px',
+            fontSize: 20,
+            lineHeight: 1,
+            color: isFavourite ? '#f5a623' : '#ccc',
+            transition: 'color 0.15s',
+          }}
+        >
+          {isFavourite ? '★' : '☆'}
+        </button>
+      )}
+
+      {/* Chevron — hidden when star is shown */}
+      {!onToggleFavourite && (
+        <div style={{ color: '#ccc', fontSize: 18, flexShrink: 0 }}>›</div>
+      )}
     </div>
   );
 }

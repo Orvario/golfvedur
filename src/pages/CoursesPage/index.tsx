@@ -36,12 +36,24 @@ function SkeletonCard() {
   );
 }
 
+const FAVOURITE_KEY = 'golfvedur_favourite_course';
+
 export function CoursesPage() {
   const [courses, setCourses] = useState<Course[]>([]);
   const [search, setSearch] = useState('');
   const [currentWeather, setCurrentWeather] = useState<Map<string, HourlySlot>>(new Map());
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [favouriteId, setFavouriteId] = useState<string | null>(
+    () => localStorage.getItem(FAVOURITE_KEY)
+  );
+
+  function toggleFavourite(id: string) {
+    const next = favouriteId === id ? null : id;
+    setFavouriteId(next);
+    if (next) localStorage.setItem(FAVOURITE_KEY, next);
+    else localStorage.removeItem(FAVOURITE_KEY);
+  }
 
   useEffect(() => {
     fetchCourses()
@@ -94,6 +106,7 @@ export function CoursesPage() {
   }, [courses, search]);
 
   const weatherLoaded = currentWeather.size;
+  const favouriteCourse = courses.find((c) => c.id === favouriteId) ?? null;
 
   return (
     <div style={{ minHeight: '100vh', background: '#f5f5f0' }}>
@@ -183,19 +196,31 @@ export function CoursesPage() {
       {/* Content */}
       <div style={{ maxWidth: 680, margin: '0 auto', padding: '14px 12px 40px' }}>
         {error && (
-          <div
-            style={{
-              textAlign: 'center',
-              padding: 32,
-              color: '#c00',
-              background: '#fff',
-              borderRadius: 8,
-              border: '1px solid #f0d0d0',
-              marginBottom: 12,
-              fontSize: 14,
-            }}
-          >
+          <div style={{
+            textAlign: 'center', padding: 32, color: '#c00',
+            background: '#fff', borderRadius: 8, border: '1px solid #f0d0d0',
+            marginBottom: 12, fontSize: 14,
+          }}>
             {error}
+          </div>
+        )}
+
+        {/* Favourite course — pinned section */}
+        {!loading && !search && favouriteCourse && (
+          <div style={{ marginBottom: 16 }}>
+            <div style={{
+              fontSize: 11, fontWeight: 800, color: '#003c71',
+              letterSpacing: 1.2, textTransform: 'uppercase',
+              marginBottom: 6, paddingLeft: 2,
+            }}>
+              Uppáhaldsvöllur
+            </div>
+            <CourseCard
+              course={favouriteCourse}
+              currentWeather={currentWeather.get(favouriteCourse.id)}
+              isFavourite
+              onToggleFavourite={toggleFavourite}
+            />
           </div>
         )}
 
@@ -206,17 +231,10 @@ export function CoursesPage() {
             ))}
           </div>
         ) : filtered.length === 0 ? (
-          <div
-            style={{
-              textAlign: 'center',
-              padding: 48,
-              color: '#999',
-              background: '#fff',
-              borderRadius: 10,
-              border: '1px solid #e4e4de',
-              fontSize: 14,
-            }}
-          >
+          <div style={{
+            textAlign: 'center', padding: 48, color: '#999',
+            background: '#fff', borderRadius: 10, border: '1px solid #e4e4de', fontSize: 14,
+          }}>
             Enginn völlur passar við <strong>„{search}"</strong>
           </div>
         ) : (
@@ -226,6 +244,8 @@ export function CoursesPage() {
                 key={course.id}
                 course={course}
                 currentWeather={currentWeather.get(course.id)}
+                isFavourite={course.id === favouriteId}
+                onToggleFavourite={toggleFavourite}
               />
             ))}
           </div>

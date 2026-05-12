@@ -297,7 +297,7 @@ function NowHero({ days }: { course: Course; days: DayGroup[] }) {
     ? getWeatherGradient(slot.symbolVar, slot.symbolName, slot.from.getHours())
     : 'linear-gradient(180deg, #4a6080 0%, #8aa0b0 100%)';
 
-  const fl = slot ? Math.round(feelsLike(slot.temperatureC, slot.windMps)) : null;
+
   const conditionText = slot ? getConditionText(slot.symbolVar, slot.symbolName) : '';
 
   const slotDateLabel = slot ? formatDateIS(slot.from) : '';
