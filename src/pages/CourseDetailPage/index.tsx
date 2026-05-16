@@ -147,6 +147,10 @@ function HourlyTimelineStrip({ hours, activeIdx, onActiveChange, scrollRef }: Ti
             const hourLabel = slot.from.toLocaleTimeString('is-IS', {
               hour: '2-digit', minute: '2-digit', hour12: false,
             });
+            const IS_DAYS_SHORT = ['Sun', 'Mán', 'Þri', 'Mið', 'fim', 'Fös', 'Lau'];
+            const prevSlot = hours[i - 1];
+            const isDayBoundary = i > 0 && prevSlot &&
+              slot.from.getDate() !== prevSlot.from.getDate();
 
             return (
               <div
@@ -164,8 +168,19 @@ function HourlyTimelineStrip({ hours, activeIdx, onActiveChange, scrollRef }: Ti
                   position: 'relative',
                   transition: 'background 0.2s',
                   cursor: 'pointer',
+                  borderLeft: isDayBoundary ? '1px solid rgba(255,255,255,0.25)' : 'none',
                 }}
               >
+                {/* Day boundary label */}
+                {isDayBoundary && (
+                  <div style={{
+                    position: 'absolute', top: 0, left: 4,
+                    fontSize: 8, fontWeight: 800, color: 'rgba(255,255,255,0.5)',
+                    textTransform: 'uppercase', letterSpacing: 0.5, lineHeight: 1,
+                  }}>
+                    {IS_DAYS_SHORT[slot.from.getDay()]}
+                  </div>
+                )}
                 {/* "Now" pill */}
                 {isNow && (
                   <div style={{
