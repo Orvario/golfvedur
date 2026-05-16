@@ -37,21 +37,6 @@ function formatTemp(t: number): string {
   return r > 0 ? `+${r}°` : `${r}°`;
 }
 
-const WIND_NAME_IS: Record<string, string> = {
-  'calm': 'Logn',
-  'light air': 'Andvari',
-  'light breeze': 'Kul',
-  'gentle breeze': 'Gola',
-  'moderate breeze': 'Stinningsgola',
-  'fresh breeze': 'Kaldi',
-  'strong breeze': 'Stór kaldi',
-  'near gale': 'Allhvasst',
-  'gale': 'Hvassviðri',
-  'strong gale': 'Stormur',
-  'storm': 'Rok',
-  'violent storm': 'Ofsaveður',
-  'hurricane': 'Fárviðri',
-};
 
 
 const IS_MONTHS = ['jan', 'feb', 'mar', 'apr', 'maí', 'jún', 'júl', 'ágú', 'sep', 'okt', 'nóv', 'des'];
