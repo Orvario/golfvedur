@@ -53,9 +53,6 @@ const WIND_NAME_IS: Record<string, string> = {
   'hurricane': 'Fárviðri',
 };
 
-function translateWindName(name: string): string {
-  return WIND_NAME_IS[name.toLowerCase()] ?? name;
-}
 
 const IS_MONTHS = ['jan', 'feb', 'mar', 'apr', 'maí', 'jún', 'júl', 'ágú', 'sep', 'okt', 'nóv', 'des'];
 const IS_WEEKDAYS = ['sunnudagur', 'mánudagur', 'þriðjudagur', 'miðvikudagur', 'fimmtudagur', 'föstudagur', 'laugardagur'];
@@ -866,7 +863,7 @@ function ShareDialog({ course, slot, onClose }: { course: Course; slot: HourlySl
               cursor: 'pointer', color: '#fff',
             }}
           >
-            {copied ? '✓ Afritað' : (navigator.share ? 'Deila' : 'Afrita tengil')}
+            {copied ? '✓ Afritað' : ('share' in navigator ? 'Deila' : 'Afrita tengil')}
           </button>
         </div>
       </div>
