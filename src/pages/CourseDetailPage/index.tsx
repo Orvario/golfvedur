@@ -229,7 +229,7 @@ function HourlyTimelineStrip({ hours, activeIdx, onActiveChange, scrollRef }: Ti
   );
 }
 
-function NowHero({ days }: { course: Course; days: DayGroup[] }) {
+function NowHero({ days, onActiveSlotChange }: { course: Course; days: DayGroup[]; onActiveSlotChange?: (slot: HourlySlot) => void }) {
   const now = new Date();
 
   // Slice away past hours so the strip always starts at the current hour
@@ -249,7 +249,13 @@ function NowHero({ days }: { course: Course; days: DayGroup[] }) {
     if (stripScrollRef.current) {
       stripScrollRef.current.scrollLeft = clamped * COL_W;
     }
+    if (allHours[clamped]) onActiveSlotChange?.(allHours[clamped]);
   }
+
+  // Report initial slot to parent
+  useEffect(() => {
+    if (allHours[0]) onActiveSlotChange?.(allHours[0]);
+  }, [allHours]);
 
   // Hero-area drag/swipe — controls same activeIdx as the strip
   const heroRef = useRef<HTMLDivElement>(null);
@@ -735,6 +741,133 @@ function InfoRow({ label, value }: { label: string; value: React.ReactNode }) {
   );
 }
 
+// ─── Share Dialog ──────────────────────────────────────────────────────────────
+
+function ShareDialog({ course, slot, onClose }: { course: Course; slot: HourlySlot | null; onClose: () => void }) {
+  const [message, setMessage] = useState('');
+  const [copied, setCopied] = useState(false);
+
+  const tempStr = slot
+    ? `${Math.round(slot.temperatureC) > 0 ? '+' : ''}${Math.round(slot.temperatureC)}°`
+    : '';
+  const windStr = slot ? `${slot.windMps.toFixed(1)} m/s ${slot.windCode}` : '';
+  const condStr = slot ? getConditionText(slot.symbolVar, slot.symbolName) : '';
+  const timeStr = slot
+    ? slot.from.toLocaleTimeString('is-IS', { hour: '2-digit', minute: '2-digit', hour12: false })
+    : '';
+  const dateStr = slot ? formatDateIS(slot.from) : '';
+
+  const shareText = [
+    message.trim(),
+    `${course.name} — ${dateStr} ${timeStr}`,
+    `${getEmoji(slot?.symbolVar ?? '', slot?.symbolName ?? '')} ${tempStr} · ${windStr}${condStr ? ` · ${condStr}` : ''}`,
+  ].filter(Boolean).join('\n');
+
+  function doShare() {
+    if (navigator.share) {
+      navigator.share({ title: 'Golfveður', text: shareText, url: window.location.href })
+        .then(onClose)
+        .catch(() => {}); // user cancelled
+    } else {
+      navigator.clipboard?.writeText(`${shareText}\n${window.location.href}`);
+      setCopied(true);
+      setTimeout(onClose, 1200);
+    }
+  }
+
+  return (
+    <div
+      onClick={onClose}
+      style={{
+        position: 'fixed', inset: 0, zIndex: 500,
+        background: 'rgba(0,0,0,0.5)',
+        display: 'flex', alignItems: 'flex-end', justifyContent: 'center',
+      }}
+    >
+      <div
+        onClick={(e) => e.stopPropagation()}
+        style={{
+          background: '#fff', borderRadius: '18px 18px 0 0',
+          padding: '24px 20px 36px',
+          width: '100%', maxWidth: 520,
+          boxShadow: '0 -4px 32px rgba(0,0,0,0.18)',
+        }}
+      >
+        {/* Handle bar */}
+        <div style={{ width: 40, height: 4, borderRadius: 2, background: '#ddd', margin: '0 auto 20px' }} />
+
+        <div style={{ fontSize: 17, fontWeight: 700, color: '#111', marginBottom: 16 }}>Deila veðri</div>
+
+        {/* Weather preview */}
+        {slot && (
+          <div style={{
+            background: '#f5f7fa', borderRadius: 12, padding: '12px 16px',
+            marginBottom: 16, display: 'flex', alignItems: 'center', gap: 14,
+          }}>
+            <div style={{ fontSize: 36 }}>{getEmoji(slot.symbolVar, slot.symbolName)}</div>
+            <div>
+              <div style={{ fontSize: 13, color: '#888', fontWeight: 500 }}>
+                {course.name} · {dateStr} {timeStr}
+              </div>
+              <div style={{ fontSize: 20, fontWeight: 800, color: '#111', marginTop: 2 }}>
+                {tempStr}
+                <span style={{ fontSize: 14, fontWeight: 600, color: '#555', marginLeft: 10 }}>
+                  {windStr}
+                </span>
+              </div>
+              {condStr && (
+                <div style={{ fontSize: 12, color: '#777', marginTop: 2 }}>{condStr}</div>
+              )}
+            </div>
+          </div>
+        )}
+
+        {/* Message input */}
+        <textarea
+          placeholder="Bæta við skilaboðum (valfrjálst)…"
+          value={message}
+          onChange={(e) => setMessage(e.target.value)}
+          rows={3}
+          maxLength={200}
+          style={{
+            width: '100%', boxSizing: 'border-box',
+            border: '1px solid #dde0e8', borderRadius: 10,
+            padding: '10px 12px', fontSize: 14, fontFamily: 'inherit',
+            resize: 'none', outline: 'none', color: '#222',
+            background: '#fafafa',
+          }}
+        />
+
+        {/* Buttons */}
+        <div style={{ display: 'flex', gap: 10, marginTop: 14 }}>
+          <button
+            onClick={onClose}
+            style={{
+              flex: 1, padding: '12px 0', borderRadius: 10,
+              border: '1px solid #dde0e8', background: '#fff',
+              fontSize: 15, fontWeight: 600, fontFamily: 'inherit',
+              cursor: 'pointer', color: '#555',
+            }}
+          >
+            Hætta við
+          </button>
+          <button
+            onClick={doShare}
+            style={{
+              flex: 2, padding: '12px 0', borderRadius: 10,
+              border: 'none', background: '#003c71',
+              fontSize: 15, fontWeight: 700, fontFamily: 'inherit',
+              cursor: 'pointer', color: '#fff',
+            }}
+          >
+            {copied ? '✓ Afritað' : (navigator.share ? 'Deila' : 'Afrita tengil')}
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 // ─── Main Page ─────────────────────────────────────────────────────────────────
 
 export function CourseDetailPage() {
@@ -745,6 +878,8 @@ export function CourseDetailPage() {
   const [mainTab, setMainTab] = useState<MainTab>('now');
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [activeSlot, setActiveSlot] = useState<HourlySlot | null>(null);
+  const [showShareDialog, setShowShareDialog] = useState(false);
 
   useEffect(() => {
     if (!id) return;
@@ -844,19 +979,7 @@ export function CourseDetailPage() {
         {/* Share button */}
         {course && days.length > 0 && (
           <button
-            onClick={() => {
-              const now = new Date();
-              const slot = days.flatMap(d => d.hours).find(h => h.from <= now && h.to > now)
-                ?? days[0]?.hours[0];
-              const text = slot
-                ? `${course.name} — ${Math.round(slot.temperatureC) > 0 ? '+' : ''}${Math.round(slot.temperatureC)}° · ${slot.windMps.toFixed(1)} m/s · ${slot.windCode}`
-                : course.name;
-              if (navigator.share) {
-                navigator.share({ title: 'Golfveður', text, url: window.location.href });
-              } else {
-                navigator.clipboard?.writeText(`${text}\n${window.location.href}`);
-              }
-            }}
+            onClick={() => setShowShareDialog(true)}
             style={{
               background: 'rgba(255,255,255,0.15)',
               border: 'none', color: '#fff', borderRadius: 6,
@@ -883,7 +1006,9 @@ export function CourseDetailPage() {
 
       {!loading && !error && days.length > 0 && course && (
         <>
-          {mainTab === 'now' && <NowHero course={course} days={days} />}
+          {mainTab === 'now' && (
+            <NowHero course={course} days={days} onActiveSlotChange={setActiveSlot} />
+          )}
           {mainTab === 'forecast' && (
             <>
               <ForecastList days={days} course={course} />
@@ -891,6 +1016,15 @@ export function CourseDetailPage() {
             </>
           )}
         </>
+      )}
+
+      {/* Share dialog */}
+      {showShareDialog && course && (
+        <ShareDialog
+          course={course}
+          slot={activeSlot ?? days[0]?.hours[0] ?? null}
+          onClose={() => setShowShareDialog(false)}
+        />
       )}
 
       {/* Fixed bottom tab bar */}
