@@ -335,7 +335,7 @@ function NowHero({ days, onActiveSlotChange }: { course: Course; days: DayGroup[
         transition: 'background 0.6s ease',
       }}
     >
-      {slot && isRainy(slot.symbolVar, slot.symbolName) && <RainStreaks />}
+      {slot && isRainy(slot.symbolVar, slot.symbolName) && <RainStreaks precipMm={slot.precipitationMm} />}
 
       {/* Hero content — full area is draggable */}
       <div
@@ -409,7 +409,7 @@ function NowHero({ days, onActiveSlotChange }: { course: Course; days: DayGroup[
         {/* Wind */}
         {slot && (
           <div style={{ color: 'rgba(255,255,255,0.9)', fontSize: 15, fontWeight: 600, marginTop: 10, textAlign: 'center' }}>
-            {translateWindName(slot.windName)} frá {slot.windCode} · {slot.windMps.toFixed(1)} m/s
+            {slot.windCode} · {Math.round(slot.windMps)} m/s
           </div>
         )}
 
@@ -464,15 +464,21 @@ function isRainy(symbolVar: string, symbolName: string): boolean {
   return n.includes('rain') || n.includes('shower') || v.includes('09') || v.includes('10') || v.includes('05') || v.includes('06');
 }
 
-function RainStreaks() {
+function RainStreaks({ precipMm }: { precipMm: number }) {
+  // Light: <0.5mm  Medium: 0.5–2mm  Heavy: >2mm
+  const intensity = precipMm < 0.5 ? 0.3 : precipMm < 2 ? 0.65 : 1;
+  const count = Math.round(10 + intensity * 25); // 10 streaks light → 35 heavy
+
   const streaks = useMemo(() => {
-    return Array.from({ length: 20 }, (_, i) => ({
-      left: `${(i * 5.3) % 100}%`,
-      animationDelay: `${(i * 0.13) % 1.5}s`,
-      animationDuration: `${0.7 + (i % 5) * 0.12}s`,
-      opacity: 0.08 + (i % 4) * 0.05,
+    return Array.from({ length: count }, (_, i) => ({
+      left: `${(i * (100 / count) + (i % 3) * 1.7) % 100}%`,
+      animationDelay: `${(i * 0.11) % 1.8}s`,
+      // Faster fall for heavy rain
+      animationDuration: `${(1.1 - intensity * 0.35) + (i % 4) * 0.08}s`,
+      opacity: (0.06 + (i % 4) * 0.04) * (0.5 + intensity * 0.5),
+      height: 18 + intensity * 14,
     }));
-  }, []);
+  }, [count, intensity]);
 
   return (
     <div
@@ -500,7 +506,7 @@ function RainStreaks() {
             left: s.left,
             top: 0,
             width: 1.5,
-            height: 24,
+            height: s.height,
             background: 'rgba(180,210,255,0.6)',
             borderRadius: 1,
             animation: `rain-fall ${s.animationDuration} ${s.animationDelay} linear infinite`,
@@ -614,7 +620,7 @@ function ForecastList({ days, course }: { days: DayGroup[]; course: Course }) {
                       flex: 1,
                       fontSize: 13, fontWeight: 600, color: '#555',
                     }}>
-                      {slot.windMps.toFixed(1)} m/s {slot.windCode}
+                      {Math.round(slot.windMps)} m/s {slot.windCode}
                     </div>
 
                     {/* Precipitation */}
@@ -750,7 +756,7 @@ function ShareDialog({ course, slot, onClose }: { course: Course; slot: HourlySl
   const tempStr = slot
     ? `${Math.round(slot.temperatureC) > 0 ? '+' : ''}${Math.round(slot.temperatureC)}°`
     : '';
-  const windStr = slot ? `${slot.windMps.toFixed(1)} m/s ${slot.windCode}` : '';
+  const windStr = slot ? `${Math.round(slot.windMps)} m/s ${slot.windCode}` : '';
   const condStr = slot ? getConditionText(slot.symbolVar, slot.symbolName) : '';
   const timeStr = slot
     ? slot.from.toLocaleTimeString('is-IS', { hour: '2-digit', minute: '2-digit', hour12: false })
