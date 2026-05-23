@@ -309,7 +309,11 @@ function NowHero({ days, onActiveSlotChange }: { course: Course; days: DayGroup[
   const dayTemps = dayHours.map((h) => h.temperatureC);
   const high = Math.max(...dayTemps);
   const low = Math.min(...dayTemps);
-  const dayPrecip = dayHours.reduce((sum, h) => sum + h.precipitationMm, 0);
+  // Sum precipitation from the selected slot onwards (remaining for the day)
+  const remainingHours = slot
+    ? dayHours.filter((h) => h.from.getTime() >= slot.from.getTime())
+    : dayHours;
+  const dayPrecip = remainingHours.reduce((sum, h) => sum + h.precipitationMm, 0);
 
   const bg = slot
     ? getWeatherGradient(slot.symbolVar, slot.symbolName, slot.from.getHours())
@@ -428,7 +432,7 @@ function NowHero({ days, onActiveSlotChange }: { course: Course; days: DayGroup[
             <>
               <span style={{ color: 'rgba(255,255,255,0.3)' }}>·</span>
               <span style={{ color: 'rgba(180,220,255,0.9)' }}>
-                {dayPrecip.toFixed(1)} mm
+                {Math.round(dayPrecip * 10) / 10} mm
               </span>
             </>
           )}
