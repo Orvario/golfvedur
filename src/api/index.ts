@@ -25,6 +25,29 @@ interface RawStation {
 
 let cachedCourses: Course[] | null = null;
 
+// Courses missing from the upstream Belgingur API.
+// The forecast endpoint accepts any lat/lon, so we can add them manually.
+const EXTRA_COURSES: Course[] = [
+  {
+    id: 'latlon/64.1539,-21.7700',
+    name: 'Korpúlfsstaðavöllur',
+    lat: 64.1539,
+    lon: -21.7700,
+    extra: {
+      abbr: 'GR',
+      address: ['Korpúlfsstaðir, 112 Reykjavík'],
+      club: 'Golfklúbbur Reykjavíkur',
+      email: null,
+      facebook: null,
+      phone: null,
+      rid: null,
+      rss: null,
+      twitter: null,
+      webpage: 'https://grgolf.is',
+    },
+  },
+];
+
 export async function fetchCourses(): Promise<Course[]> {
   if (cachedCourses) return cachedCourses;
 
@@ -39,7 +62,7 @@ export async function fetchCourses(): Promise<Course[]> {
   // Deduplicate by name — the upstream API occasionally returns the same course
   // twice with different (erroneous) coordinates. Keep the first occurrence.
   const seen = new Set<string>();
-  cachedCourses = stations
+  const fromApi = stations
     .filter((s) => {
       const key = s.name.toLowerCase();
       if (seen.has(key)) return false;
@@ -54,6 +77,14 @@ export async function fetchCourses(): Promise<Course[]> {
       extra: s.extra,
     }));
 
+  // Merge in manually added courses that the upstream API is missing.
+  for (const extra of EXTRA_COURSES) {
+    if (!seen.has(extra.name.toLowerCase())) {
+      fromApi.push(extra);
+    }
+  }
+
+  cachedCourses = fromApi.sort((a, b) => a.name.localeCompare(b.name, 'is'));
   return cachedCourses;
 }
 
