@@ -4,12 +4,12 @@
   "description": "Veður á golfvöllum Íslands",
   "start_url": "/",
   "display": "standalone",
-  "background_color": "#003c71",
-  "theme_color": "#003c71",
+  "background_color": "#0B0C1E",
+  "theme_color": "#0B0C1E",
   "orientation": "portrait",
   "icons": [
     {
-      "src": "data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 512 512'><rect width='512' height='512' rx='112' fill='%23003c71'/><text y='360' x='256' text-anchor='middle' font-size='320'>⛳</text></svg>",
+      "src": "data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 512 512'><rect width='512' height='512' rx='112' fill='%230B0C1E'/><defs><linearGradient id='g' x1='0' y1='0' x2='1' y2='1'><stop stop-color='%2347BBE1'/><stop offset='1' stop-color='%230575E6'/></linearGradient></defs><circle cx='256' cy='256' r='140' fill='url(%23g)'/><text y='340' x='256' text-anchor='middle' font-size='200'>⛳</text></svg>",
       "sizes": "any",
       "type": "image/svg+xml",
       "purpose": "any maskable"

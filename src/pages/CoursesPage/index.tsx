@@ -2,36 +2,27 @@ import { useEffect, useState, useMemo } from 'react';
 import { fetchCourses, fetchForecast } from '../../api';
 import type { Course, HourlySlot } from '../../types';
 import { CourseCard } from '../../components/CourseCard';
+import { theme } from '../../theme';
 
 function SkeletonCard() {
   return (
     <div
       style={{
-        background: '#fff',
-        border: '1px solid #e4e4de',
-        borderRadius: 10,
+        background: theme.bgCard,
+        border: `1px solid ${theme.border}`,
+        borderRadius: theme.radiusMd,
         padding: '14px 16px',
         display: 'flex',
         alignItems: 'center',
         gap: 12,
       }}
     >
-      <div
-        style={{ width: 36, height: 36, borderRadius: '50%', background: '#eee', flexShrink: 0 }}
-      />
+      <div style={{ width: 36, height: 36, borderRadius: 14, background: 'rgba(255,255,255,0.08)', flexShrink: 0 }} />
       <div style={{ flex: 1 }}>
-        <div
-          style={{
-            height: 13,
-            width: '55%',
-            background: '#eee',
-            borderRadius: 4,
-            marginBottom: 7,
-          }}
-        />
-        <div style={{ height: 11, width: '75%', background: '#f2f2f2', borderRadius: 4 }} />
+        <div style={{ height: 13, width: '55%', background: 'rgba(255,255,255,0.08)', borderRadius: 4, marginBottom: 7 }} />
+        <div style={{ height: 11, width: '75%', background: 'rgba(255,255,255,0.05)', borderRadius: 4 }} />
       </div>
-      <div style={{ width: 32, height: 20, background: '#eee', borderRadius: 4 }} />
+      <div style={{ width: 40, height: 22, background: 'rgba(255,255,255,0.08)', borderRadius: 6 }} />
     </div>
   );
 }
@@ -65,7 +56,7 @@ export function CoursesPage() {
       .catch((err) => {
         console.error(err);
         const msg = err instanceof Error ? err.message : String(err);
-                setError(`Tókst ekki að sækja golfvelli: ${msg}`);
+        setError(`Tókst ekki að sækja golfvelli: ${msg}`);
         setLoading(false);
       });
   }, []);
@@ -109,60 +100,70 @@ export function CoursesPage() {
   const favouriteCourse = courses.find((c) => c.id === favouriteId) ?? null;
 
   return (
-    <div style={{ minHeight: '100vh', background: '#f5f5f0' }}>
-      {/* Header */}
+    <div style={{
+      minHeight: '100vh',
+      background: `
+        radial-gradient(ellipse 80% 50% at 50% -10%, rgba(71,187,225,0.22), transparent 55%),
+        radial-gradient(ellipse 60% 40% at 100% 20%, rgba(5,117,230,0.12), transparent 50%),
+        ${theme.bg}
+      `,
+    }}>
       <div
         style={{
-          background: '#003c71',
-          color: '#fff',
-          padding: '20px 16px 20px',
           position: 'sticky',
           top: 0,
           zIndex: 100,
-          boxShadow: '0 2px 10px rgba(0,0,0,0.2)',
+          padding: '18px 16px 16px',
+          background: 'rgba(11,12,30,0.82)',
+          backdropFilter: 'blur(16px)',
+          WebkitBackdropFilter: 'blur(16px)',
+          borderBottom: `1px solid ${theme.border}`,
         }}
       >
-        <div style={{ maxWidth: 680, margin: '0 auto' }}>
+        <div style={{ maxWidth: theme.maxWidth, margin: '0 auto' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 14 }}>
-            <span style={{ fontSize: 24, lineHeight: 1 }}>⛳</span>
-            <h1
-              style={{
-                margin: 0,
-                fontSize: 20,
-                fontWeight: 800,
-                letterSpacing: -0.4,
-                flex: 1,
-              }}
-            >
+            <div style={{
+              width: 36, height: 36, borderRadius: 12,
+              background: theme.heroGradient,
+              display: 'flex', alignItems: 'center', justifyContent: 'center',
+              boxShadow: '0 6px 16px rgba(5,117,230,0.35)',
+              fontSize: 18,
+            }}>
+              ⛳
+            </div>
+            <h1 style={{
+              margin: 0,
+              fontSize: 22,
+              fontWeight: 800,
+              letterSpacing: -0.6,
+              flex: 1,
+              color: theme.text,
+            }}>
               Golfveður
             </h1>
             {courses.length > 0 && (
-              <span
-                style={{
-                  fontSize: 12,
-                  opacity: 0.65,
-                  background: 'rgba(255,255,255,0.12)',
-                  borderRadius: 20,
-                  padding: '3px 9px',
-                }}
-              >
-                {weatherLoaded}/{courses.length} sótt
+              <span style={{
+                fontSize: 11,
+                fontWeight: 600,
+                color: theme.textMuted,
+                background: 'rgba(255,255,255,0.06)',
+                border: `1px solid ${theme.border}`,
+                borderRadius: theme.radiusPill,
+                padding: '4px 10px',
+              }}>
+                {weatherLoaded}/{courses.length}
               </span>
             )}
           </div>
           <div style={{ position: 'relative' }}>
-            <span
-              style={{
-                position: 'absolute',
-                left: 12,
-                top: '50%',
-                transform: 'translateY(-50%)',
-                fontSize: 15,
-                opacity: 0.5,
-              }}
+            <svg
+              width="16" height="16" viewBox="0 0 24 24" fill="none"
+              style={{ position: 'absolute', left: 14, top: '50%', transform: 'translateY(-50%)', opacity: 0.45 }}
+              aria-hidden
             >
-              🔍
-            </span>
+              <circle cx="11" cy="11" r="7" stroke="#fff" strokeWidth="2" />
+              <path d="M20 20l-3.5-3.5" stroke="#fff" strokeWidth="2" strokeLinecap="round" />
+            </svg>
             <input
               type="search"
               placeholder="Leita að velli eða klúbbi…"
@@ -170,48 +171,45 @@ export function CoursesPage() {
               onChange={(e) => setSearch(e.target.value)}
               style={{
                 width: '100%',
-                padding: '10px 14px 10px 36px',
-                borderRadius: 8,
-                border: '1.5px solid rgba(255,255,255,0.2)',
+                padding: '12px 14px 12px 40px',
+                borderRadius: theme.radiusSm,
+                border: `1px solid ${theme.border}`,
                 fontSize: 14,
-                background: 'rgba(255,255,255,0.12)',
-                color: '#fff',
+                fontWeight: 500,
+                background: 'rgba(255,255,255,0.06)',
+                color: theme.text,
                 outline: 'none',
-                boxSizing: 'border-box',
-                fontFamily: 'inherit',
               }}
               onFocus={(e) => {
-                e.currentTarget.style.background = 'rgba(255,255,255,0.2)';
-                e.currentTarget.style.border = '1.5px solid rgba(255,255,255,0.4)';
+                e.currentTarget.style.border = `1px solid rgba(71,187,225,0.5)`;
+                e.currentTarget.style.background = 'rgba(255,255,255,0.09)';
               }}
               onBlur={(e) => {
-                e.currentTarget.style.background = 'rgba(255,255,255,0.12)';
-                e.currentTarget.style.border = '1.5px solid rgba(255,255,255,0.2)';
+                e.currentTarget.style.border = `1px solid ${theme.border}`;
+                e.currentTarget.style.background = 'rgba(255,255,255,0.06)';
               }}
             />
           </div>
         </div>
       </div>
 
-      {/* Content */}
-      <div style={{ maxWidth: 680, margin: '0 auto', padding: '14px 12px 40px' }}>
+      <div style={{ maxWidth: theme.maxWidth, margin: '0 auto', padding: '16px 14px 48px' }}>
         {error && (
           <div style={{
-            textAlign: 'center', padding: 32, color: '#c00',
-            background: '#fff', borderRadius: 8, border: '1px solid #f0d0d0',
+            textAlign: 'center', padding: 24, color: '#FF8A8A',
+            background: 'rgba(255,80,80,0.08)', borderRadius: theme.radiusMd,
+            border: '1px solid rgba(255,100,100,0.25)',
             marginBottom: 12, fontSize: 14,
           }}>
             {error}
           </div>
         )}
 
-        {/* Favourite course — pinned section */}
         {!loading && !search && favouriteCourse && (
-          <div style={{ marginBottom: 16 }}>
+          <div style={{ marginBottom: 20 }}>
             <div style={{
-              fontSize: 11, fontWeight: 800, color: '#003c71',
-              letterSpacing: 1.2, textTransform: 'uppercase',
-              marginBottom: 6, paddingLeft: 2,
+              fontSize: 12, fontWeight: 700, color: theme.blueGlow,
+              letterSpacing: 0.4, marginBottom: 8, paddingLeft: 4,
             }}>
               Uppáhaldsvöllur
             </div>
@@ -225,20 +223,23 @@ export function CoursesPage() {
         )}
 
         {loading ? (
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-            {Array.from({ length: 12 }).map((_, i) => (
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+            {Array.from({ length: 10 }).map((_, i) => (
               <SkeletonCard key={i} />
             ))}
           </div>
-        ) : filtered.length === 0 ? (
+        ) : !error && filtered.length === 0 ? (
           <div style={{
-            textAlign: 'center', padding: 48, color: '#999',
-            background: '#fff', borderRadius: 10, border: '1px solid #e4e4de', fontSize: 14,
+            textAlign: 'center', padding: 48, color: theme.textMuted,
+            background: theme.bgCard, borderRadius: theme.radiusMd,
+            border: `1px solid ${theme.border}`, fontSize: 14,
           }}>
-            Enginn völlur passar við <strong>„{search}"</strong>
+            {search.trim()
+              ? <>Enginn völlur passar við <strong style={{ color: theme.text }}>„{search}"</strong></>
+              : 'Engir golfvellir fundust.'}
           </div>
-        ) : (
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+        ) : !error && filtered.length > 0 ? (
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
             {filtered.map((course) => (
               <CourseCard
                 key={course.id}
@@ -249,7 +250,7 @@ export function CoursesPage() {
               />
             ))}
           </div>
-        )}
+        ) : null}
       </div>
     </div>
   );

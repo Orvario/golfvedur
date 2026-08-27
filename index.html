@@ -4,24 +4,70 @@
     <meta charset="UTF-8" />
     <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>⛳</text></svg>" />
     <link rel="manifest" href="/manifest.json" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <meta name="theme-color" content="#003c71" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+    <meta name="theme-color" content="#0B0C1E" />
     <meta name="mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
     <meta name="apple-mobile-web-app-title" content="Golfveður" />
     <title>Golfveður — Veður á golfvöllum Íslands</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
     <style>
       *, *::before, *::after { box-sizing: border-box; }
-      html, body { margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif; }
-      input::placeholder { color: rgba(255,255,255,0.55); }
-      .now-hero { height: calc(100vh - 108px); height: calc(100dvh - 108px); }
-      ::-webkit-scrollbar { height: 4px; width: 4px; }
+      :root {
+        --gv-bg: #0B0C1E;
+        --gv-text: #FFFFFF;
+        --gv-muted: rgba(255,255,255,0.55);
+        --gv-blue-top: #47BBE1;
+        --gv-blue-bot: #0575E6;
+        --gv-glow: #00D2FF;
+        --gv-radius-xl: 36px;
+        --gv-max: 430px;
+        color-scheme: dark;
+      }
+      html, body {
+        margin: 0; padding: 0;
+        background: var(--gv-bg);
+        color: var(--gv-text);
+        font-family: Manrope, system-ui, sans-serif;
+        -webkit-font-smoothing: antialiased;
+        -moz-osx-font-smoothing: grayscale;
+      }
+      ::selection { background: rgba(71,187,225,0.35); color: #fff; }
+      input, textarea, button { font-family: inherit; }
+      input::placeholder, textarea::placeholder { color: rgba(255,255,255,0.4); }
+      .now-hero { min-height: calc(100vh - 108px); min-height: calc(100dvh - 108px); }
+      ::-webkit-scrollbar { height: 3px; width: 3px; }
       ::-webkit-scrollbar-track { background: transparent; }
-      ::-webkit-scrollbar-thumb { background: #ccc; border-radius: 2px; }
+      ::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.2); border-radius: 2px; }
+      @keyframes gv-fade-up {
+        from { opacity: 0; transform: translateY(10px); }
+        to { opacity: 1; transform: translateY(0); }
+      }
+      @keyframes gv-icon-float {
+        0%, 100% { transform: translateY(0); }
+        50% { transform: translateY(-6px); }
+      }
+      @media (prefers-reduced-motion: reduce) {
+        *, *::before, *::after {
+          animation-duration: 0.01ms !important;
+          animation-iteration-count: 1 !important;
+          transition-duration: 0.01ms !important;
+        }
+      }
     </style>
   </head>
   <body>
+    <!--
+      THESIS: Course weather as a dark glass cockpit — blue plates on night ground, not a beige list app.
+      OWN-WORLD: #0B0C1E ground · #47BBE1→#0575E6 hero plates · 28–36px radius · Manrope · soft blue glow on active hour.
+      STORY: Golfer opens a course and instantly reads temp, wind, rain, and the next hours.
+      FIRST VIEWPORT: Location header · large weather icon + temp on blue plate · wind/humidity/rain row · Today hourly pills · 5-day link.
+      FORM: Brief-pinned glass weather mock (user reference) · seed: pinned · Operate mode.
+      FINISH: unreviewed and undocumented is unfinished; this build ends with the finish review, the verdict, DESIGN.md, and every shipping raster carrying its provenance
+    -->
     <div id="root"></div>
     <script type="module" src="/src/main.tsx"></script>
   </body>

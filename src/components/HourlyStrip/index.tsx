@@ -2,6 +2,7 @@ import { useMemo, useRef } from 'react';
 import type { HourlySlot } from '../../types';
 import { WeatherIcon } from '../WeatherIcon';
 import { WindArrow } from '../WindArrow';
+import { theme } from '../../theme';
 
 interface Props {
   hours: HourlySlot[];
@@ -9,7 +10,6 @@ interface Props {
 
 export const COL_W = 64;
 
-// Explicit row heights — exported so StripWithLabels can stay in sync
 export const ROW_TIME_H = 36;
 export const ROW_ICON_H = 46;
 export const ROW_TEMP_H = 76;
@@ -42,8 +42,8 @@ function TempCurve({ hours, width }: { hours: HourlySlot[]; width: number }) {
     <svg width={width} height={h} style={{ display: 'block', overflow: 'visible' }}>
       <defs>
         <linearGradient id="tempGrad" x1="0" y1="0" x2="0" y2="1">
-          <stop offset="0%" stopColor="#4a90d9" stopOpacity={0.25} />
-          <stop offset="100%" stopColor="#4a90d9" stopOpacity={0} />
+          <stop offset="0%" stopColor="#47BBE1" stopOpacity={0.35} />
+          <stop offset="100%" stopColor="#47BBE1" stopOpacity={0} />
         </linearGradient>
       </defs>
       <polygon
@@ -57,21 +57,21 @@ function TempCurve({ hours, width }: { hours: HourlySlot[]; width: number }) {
       <polyline
         points={polyline}
         fill="none"
-        stroke="#4a90d9"
+        stroke="#47BBE1"
         strokeWidth={2.2}
         strokeLinejoin="round"
         strokeLinecap="round"
       />
       {points.map((p, i) => (
         <g key={i}>
-          <circle cx={p.x} cy={p.y} r={2.5} fill="#4a90d9" />
+          <circle cx={p.x} cy={p.y} r={2.5} fill="#47BBE1" />
           <text
             x={p.x}
             y={p.y - 7}
             textAnchor="middle"
             fontSize={11}
             fontWeight={600}
-            fill={p.t < 0 ? '#3a7ab8' : '#1a1a1a'}
+            fill="#fff"
             fontFamily="inherit"
           >
             {p.t > 0 ? `+${p.t.toFixed(0)}` : p.t.toFixed(0)}°
@@ -99,8 +99,8 @@ function PrecipBars({ hours, width }: { hours: HourlySlot[]; width: number }) {
               y={h - barH - 4}
               width={22}
               height={Math.max(barH, 0)}
-              fill="#4a90d9"
-              opacity={0.72}
+              fill="#47BBE1"
+              opacity={0.75}
               rx={2.5}
             />
             {slot.precipitationMm >= 0.2 && (
@@ -109,7 +109,7 @@ function PrecipBars({ hours, width }: { hours: HourlySlot[]; width: number }) {
                 y={h - barH - 7}
                 textAnchor="middle"
                 fontSize={9}
-                fill="#2971b8"
+                fill="#A8DCFF"
                 fontFamily="inherit"
                 fontWeight={600}
               >
@@ -123,7 +123,7 @@ function PrecipBars({ hours, width }: { hours: HourlySlot[]; width: number }) {
   );
 }
 
-const ROW_BORDER = '1px solid #e8e8e4';
+const ROW_BORDER = `1px solid ${theme.border}`;
 
 export function HourlyStrip({ hours }: Props) {
   const scrollRef = useRef<HTMLDivElement>(null);
@@ -153,7 +153,6 @@ export function HourlyStrip({ hours }: Props) {
 
   return (
     <div style={{ position: 'relative' }}>
-      {/* Fade hint on right edge */}
       <div
         style={{
           position: 'absolute',
@@ -161,7 +160,7 @@ export function HourlyStrip({ hours }: Props) {
           top: 0,
           bottom: 0,
           width: 32,
-          background: 'linear-gradient(to right, transparent, rgba(255,255,255,0.85))',
+          background: `linear-gradient(to right, transparent, ${theme.bgElevated})`,
           pointerEvents: 'none',
           zIndex: 2,
         }}
@@ -177,7 +176,6 @@ export function HourlyStrip({ hours }: Props) {
         onMouseDown={handleMouseDown}
       >
         <div style={{ width: totalWidth }}>
-          {/* Time labels row */}
           <div style={{ display: 'flex', height: ROW_TIME_H, borderBottom: ROW_BORDER }}>
             {hours.map((slot, i) => (
               <div
@@ -188,10 +186,11 @@ export function HourlyStrip({ hours }: Props) {
                   display: 'flex',
                   alignItems: 'center',
                   justifyContent: 'center',
-                  color: '#555',
+                  color: theme.textMuted,
                   fontSize: 12,
-                  fontWeight: 500,
+                  fontWeight: 600,
                   borderRight: ROW_BORDER,
+                  fontVariantNumeric: 'tabular-nums',
                 }}
               >
                 {formatHour(slot.from)}
@@ -199,7 +198,6 @@ export function HourlyStrip({ hours }: Props) {
             ))}
           </div>
 
-          {/* Weather icons row */}
           <div style={{ display: 'flex', height: ROW_ICON_H, borderBottom: ROW_BORDER }}>
             {hours.map((slot, i) => (
               <div
@@ -213,22 +211,19 @@ export function HourlyStrip({ hours }: Props) {
                   borderRight: ROW_BORDER,
                 }}
               >
-                <WeatherIcon symbolVar={slot.symbolVar} symbolName={slot.symbolName} size={26} />
+                <WeatherIcon symbolVar={slot.symbolVar} symbolName={slot.symbolName} size={28} />
               </div>
             ))}
           </div>
 
-          {/* Temperature curve row */}
           <div style={{ borderBottom: ROW_BORDER, overflow: 'visible' }}>
             <TempCurve hours={hours} width={totalWidth} />
           </div>
 
-          {/* Precipitation row */}
-          <div style={{ background: '#f7f8fb', borderBottom: ROW_BORDER }}>
+          <div style={{ background: 'rgba(71,187,225,0.06)', borderBottom: ROW_BORDER }}>
             <PrecipBars hours={hours} width={totalWidth} />
           </div>
 
-          {/* Wind row */}
           <div style={{ display: 'flex', height: ROW_WIND_H }}>
             {hours.map((slot, i) => (
               <div
