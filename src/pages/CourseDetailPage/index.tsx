@@ -228,8 +228,8 @@ function NowHero({
   }, [days]);
 
   const [activeIdx, setActiveIdx] = useState(0);
-  const [baseBg, setBaseBg] = useState(theme.heroGradient);
-  const [overlayBg, setOverlayBg] = useState(theme.heroGradient);
+  const [baseBg, setBaseBg] = useState<string>(theme.heroGradient);
+  const [overlayBg, setOverlayBg] = useState<string>(theme.heroGradient);
   const [overlayOn, setOverlayOn] = useState(false);
   const [dragX, setDragX] = useState(0);
   const [contentShift, setContentShift] = useState(0);
@@ -237,7 +237,7 @@ function NowHero({
   const stripScrollRef = useRef<HTMLDivElement>(null);
   const activeIdxRef = useRef(0);
   const overlayOnRef = useRef(false);
-  const overlayBgRef = useRef(theme.heroGradient);
+  const overlayBgRef = useRef<string>(theme.heroGradient);
   const settleTimerRef = useRef<number | null>(null);
   const contentRafRef = useRef<number | null>(null);
   const draggingRef = useRef(false);
